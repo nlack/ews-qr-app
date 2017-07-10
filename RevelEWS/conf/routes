@@ -19,8 +19,8 @@ GET     /public/*filepath                       Static.Serve("public")
 *       /:controller/:action                    :controller.:action
 
 
-GET     /item/:id   BidItemCtrl.Get
-POST    /item       BidItemCtrl.Add
-PUT     /item/:id   BidItemCtrl.Update
-DELETE  /item/:id   BidItemCtrl.Delete
-GET     /items      BidItemCtrl.List
+GET     /item/:id   CourseCtrl.Get
+POST    /item       CourseCtrl.Add
+PUT     /item/:id   CourseCtrl.Update
+DELETE  /item/:id   CourseCtrl.Delete
+GET     /items      CourseCtrl.List

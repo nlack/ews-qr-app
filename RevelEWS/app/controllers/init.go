@@ -31,10 +31,12 @@ func getParamString(param string, defaultValue string) string {
 
 func getConnectionString() string {
 	host := getParamString("db.host", "")
-	port := getParamString("db.port", "3306")
+	port := getParamString("db.port", "")
 	user := getParamString("db.user", "")
-	pass := getParamString("db.password", "password")
-	dbname := getParamString("db.name", "auction")
+
+	pass := "asdf"
+
+	dbname := getParamString("db.name", "")
 	protocol := getParamString("db.protocol", "tcp")
 	dbargs := getParamString("dbargs", " ")
 
@@ -58,17 +60,21 @@ var InitDb func() = func() {
 	}
 	// Defines the table for use by GORP
 	// This is a function we will create soon.
-	defineBidItemTable(Dbm)
+	defineCourseTable(Dbm)
 	if err := Dbm.CreateTablesIfNotExists(); err != nil {
 		revel.ERROR.Fatal(err)
 	}
 }
 
-func defineBidItemTable(dbm *gorp.DbMap) {
+func defineCourseTable(dbm *gorp.DbMap) {
 	// set "id" as primary key and autoincrement
-	t := dbm.AddTable(models.BidItem{}).SetKeys(true, "id")
-	// e.g. VARCHAR(25)
+	t := dbm.AddTable(models.Course{}).SetKeys(true, "id")
 	t.ColMap("name").SetMaxSize(25)
+	t = dbm.AddTable(models.CourseInstructor{}).SetKeys(true, "id")
+	t.ColMap("name").SetMaxSize(25)
+	t = dbm.AddTable(models.Participant{}).SetKeys(true, "id")
+	t.ColMap("name").SetMaxSize(25)
+
 }
 
 func init() {

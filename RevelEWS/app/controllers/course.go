@@ -8,62 +8,62 @@ import (
 	"github.com/revel/revel"
 )
 
-type BidItemCtrl struct {
+type CourseCtrl struct {
 	GorpController
 }
 
-func (c BidItemCtrl) parseBidItem() (models.BidItem, error) {
-	biditem := models.BidItem{}
+func (c CourseCtrl) parseCourse() (models.Course, error) {
+	biditem := models.Course{}
 	err := json.NewDecoder(c.Request.Body).Decode(&biditem)
 	return biditem, err
 }
 
-func (c BidItemCtrl) Add() revel.Result {
-	if biditem, err := c.parseBidItem(); err != nil {
-		return c.RenderText("Unable to parse the BidItem from JSON.")
+func (c CourseCtrl) Add() revel.Result {
+	if biditem, err := c.parseCourse(); err != nil {
+		return c.RenderText("Unable to parse the Course from JSON.")
 	} else {
 		// Validate the model
 		biditem.Validate(c.Validation)
 		if c.Validation.HasErrors() {
 			// Do something better here!
-			return c.RenderText("You have error in your BidItem.")
+			return c.RenderText("You have error in your Course.")
 		} else {
 			if err := c.Txn.Insert(&biditem); err != nil {
 				return c.RenderText(
 					"Error inserting record into database!")
 			} else {
-				return c.RenderJson(biditem)
+				return c.RenderJSON(biditem)
 			}
 		}
 	}
 }
 
-func (c BidItemCtrl) Get(id int64) revel.Result {
-	biditem := new(models.BidItem)
+func (c CourseCtrl) Get(id int64) revel.Result {
+	biditem := new(models.Course)
 	err := c.Txn.SelectOne(biditem,
-		`SELECT * FROM BidItem WHERE id = ?`, id)
+		`SELECT * FROM Course WHERE id = ?`, id)
 	if err != nil {
 		return c.RenderText("Error.  Item probably doesn't exist.")
 	}
-	return c.RenderJson(biditem)
+	return c.RenderJSON(biditem)
 }
 
-func (c BidItemCtrl) List() revel.Result {
+func (c CourseCtrl) List() revel.Result {
 	lastId := parseIntOrDefault(c.Params.Get("lid"), -1)
 	limit := parseUintOrDefault(c.Params.Get("limit"), uint64(25))
-	biditems, err := c.Txn.Select(models.BidItem{},
-		`SELECT * FROM BidItem WHERE Id > ? LIMIT ?`, lastId, limit)
+	biditems, err := c.Txn.Select(models.Course{},
+		`SELECT * FROM Course WHERE Id > ? LIMIT ?`, lastId, limit)
 	if err != nil {
 		return c.RenderText(
 			"Error trying to get records from DB.")
 	}
-	return c.RenderJson(biditems)
+	return c.RenderJSON(biditems)
 }
 
-func (c BidItemCtrl) Update(id int64) revel.Result {
-	biditem, err := c.parseBidItem()
+func (c CourseCtrl) Update(id int64) revel.Result {
+	biditem, err := c.parseCourse()
 	if err != nil {
-		return c.RenderText("Unable to parse the BidItem from JSON.")
+		return c.RenderText("Unable to parse the Course from JSON.")
 	}
 	// Ensure the Id is set.
 	biditem.Id = id
@@ -74,10 +74,10 @@ func (c BidItemCtrl) Update(id int64) revel.Result {
 	return c.RenderText("Updated %v", id)
 }
 
-func (c BidItemCtrl) Delete(id int64) revel.Result {
-	success, err := c.Txn.Delete(&models.BidItem{Id: id})
+func (c CourseCtrl) Delete(id int64) revel.Result {
+	success, err := c.Txn.Delete(&models.Course{Id: id})
 	if err != nil || success == 0 {
-		return c.RenderText("Failed to remove BidItem")
+		return c.RenderText("Failed to remove Course")
 	}
 	return c.RenderText("Deleted %v", id)
 }
