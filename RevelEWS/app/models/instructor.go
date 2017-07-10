@@ -2,12 +2,12 @@ package models
 
 import "github.com/revel/revel"
 
-type CourseInstructor struct {
+type Instructor struct {
 	Id   int64  `db:"id" json:"id"`
 	Name string `db:"name" json:"name"`
 }
 
-func (b *CourseInstructor) Validate(v *revel.Validation) {
+func (b *Instructor) Validate(v *revel.Validation) {
 
 	v.Check(b.Name,
 		revel.ValidRequired(),

@@ -11,12 +11,6 @@ import (
 	"github.com/revel/revel"
 )
 
-func init() {
-	revel.InterceptMethod((*GorpController).Begin, revel.BEFORE)
-	revel.InterceptMethod((*GorpController).Commit, revel.AFTER)
-	revel.InterceptMethod((*GorpController).Rollback, revel.FINALLY)
-}
-
 func getParamString(param string, defaultValue string) string {
 	p, found := revel.Config.String(param)
 	if !found {
@@ -61,6 +55,7 @@ var InitDb func() = func() {
 	// Defines the table for use by GORP
 	// This is a function we will create soon.
 	defineCourseTable(Dbm)
+
 	if err := Dbm.CreateTablesIfNotExists(); err != nil {
 		revel.ERROR.Fatal(err)
 	}
@@ -70,7 +65,7 @@ func defineCourseTable(dbm *gorp.DbMap) {
 	// set "id" as primary key and autoincrement
 	t := dbm.AddTable(models.Course{}).SetKeys(true, "id")
 	t.ColMap("name").SetMaxSize(25)
-	t = dbm.AddTable(models.CourseInstructor{}).SetKeys(true, "id")
+	t = dbm.AddTable(models.Instructor{}).SetKeys(true, "id")
 	t.ColMap("name").SetMaxSize(25)
 	t = dbm.AddTable(models.Participant{}).SetKeys(true, "id")
 	t.ColMap("name").SetMaxSize(25)
