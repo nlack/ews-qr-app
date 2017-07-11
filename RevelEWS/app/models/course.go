@@ -13,19 +13,4 @@ func (b *Course) Validate(v *revel.Validation) {
 		revel.ValidRequired(),
 		revel.ValidMaxSize(25))
 
-	/*v.Check(b.Category,
-		revel.ValidRequired(),
-		revel.ValidMatch(
-			regexp.MustCompile(
-				"^(travel|leasure|sports|entertainment)$")))
-
-	v.Check(b.EstimatedValue,
-		revel.ValidRequired())
-
-	v.Check(b.StartBid,
-		revel.ValidRequired())
-
-	v.Check(b.BidIncrement,
-		revel.ValidRequired())
-	*/
 }

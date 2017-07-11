@@ -28,7 +28,7 @@ func getConnectionString() string {
 	port := getParamString("db.port", "")
 	user := getParamString("db.user", "")
 
-	pass := "asdf"
+	pass := ""
 
 	dbname := getParamString("db.name", "")
 	protocol := getParamString("db.protocol", "tcp")
@@ -65,9 +65,7 @@ func defineCourseTable(dbm *gorp.DbMap) {
 	// set "id" as primary key and autoincrement
 	t := dbm.AddTable(models.Course{}).SetKeys(true, "id")
 	t.ColMap("name").SetMaxSize(25)
-	t = dbm.AddTable(models.Instructor{}).SetKeys(true, "id")
-	t.ColMap("name").SetMaxSize(25)
-	t = dbm.AddTable(models.Participant{}).SetKeys(true, "id")
+	t = dbm.AddTable(models.User{}).SetKeys(true, "id")
 	t.ColMap("name").SetMaxSize(25)
 
 }

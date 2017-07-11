@@ -1,4 +1,4 @@
-{{set . "title" "Home"}}
+
 {{template "header.html" .}}
 
 <header class="jumbotron" style="background-color:#A9F16C">
@@ -6,8 +6,7 @@
     <div class="row">
       <h1>It works!</h1>
       <a href="{{url "App.Impressum"}}">Impressum</a>
-      <a href="{{url "Instructor.Login"}}">Instructor Login</a>
-      <a href="{{url "Participant.Login"}}">Participant Login</a>
+
 
     </div>
   </div>
@@ -24,5 +23,26 @@
     </div>
   </div>
 </div>
+
+
+
+
+<form action="{{url "App.Login"}}" id="formLogin" method="POST">
+   <p class="field">
+     <label>Login Name:</label>
+     <input type="text" name="username" size="19" value="{{.flash.username}}" />
+   </p>
+   <p class="field">
+     <label>Password:</label>
+     <input type="password" name="password" size="19"/>
+   </p>
+   <p class="field">
+     <label>Instructor:</label>
+     <input type="checkbox" name="instructor" value="true"/>
+   </p>
+   <p class="buttons">
+     <input type="submit" value="Login" />
+   </p>
+ </form>
 
 {{template "footer.html" .}}

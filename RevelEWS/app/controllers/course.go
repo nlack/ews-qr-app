@@ -8,17 +8,17 @@ import (
 	"github.com/revel/revel"
 )
 
-type CourseCtrl struct {
+type Course struct {
 	GorpController
 }
 
-func (c CourseCtrl) parseCourse() (models.Course, error) {
+func (c Course) parseCourse() (models.Course, error) {
 	biditem := models.Course{}
 	err := json.NewDecoder(c.Request.Body).Decode(&biditem)
 	return biditem, err
 }
 
-func (c CourseCtrl) Add() revel.Result {
+func (c Course) Add() revel.Result {
 	if biditem, err := c.parseCourse(); err != nil {
 		return c.RenderText("Unable to parse the Course from JSON.")
 	} else {
@@ -38,17 +38,17 @@ func (c CourseCtrl) Add() revel.Result {
 	}
 }
 
-func (c CourseCtrl) Get(id int64) revel.Result {
-	biditem := new(models.Course)
-	err := c.Txn.SelectOne(biditem,
+func (c Course) Get(id int64) revel.Result {
+	course := new(models.Course)
+	err := c.Txn.SelectOne(course,
 		`SELECT * FROM Course WHERE id = ?`, id)
 	if err != nil {
 		return c.RenderText("Error.  Item probably doesn't exist.")
 	}
-	return c.RenderJSON(biditem)
+	return c.RenderJSON(course)
 }
 
-func (c CourseCtrl) List() revel.Result {
+func (c Course) List() revel.Result {
 	lastId := parseIntOrDefault(c.Params.Get("lid"), -1)
 	limit := parseUintOrDefault(c.Params.Get("limit"), uint64(25))
 	biditems, err := c.Txn.Select(models.Course{},
@@ -60,7 +60,7 @@ func (c CourseCtrl) List() revel.Result {
 	return c.RenderJSON(biditems)
 }
 
-func (c CourseCtrl) Update(id int64) revel.Result {
+func (c Course) Update(id int64) revel.Result {
 	biditem, err := c.parseCourse()
 	if err != nil {
 		return c.RenderText("Unable to parse the Course from JSON.")
@@ -74,7 +74,7 @@ func (c CourseCtrl) Update(id int64) revel.Result {
 	return c.RenderText("Updated %v", id)
 }
 
-func (c CourseCtrl) Delete(id int64) revel.Result {
+func (c Course) Delete(id int64) revel.Result {
 	success, err := c.Txn.Delete(&models.Course{Id: id})
 	if err != nil || success == 0 {
 		return c.RenderText("Failed to remove Course")
