@@ -84,7 +84,7 @@
 
 ### Kurs hinzufügen
 
-`POST		/course							Course.Add`
+`POST		/courses/add							Course.Add`
 
 #### REQUEST
 
@@ -101,14 +101,14 @@
 
 ```json
 {
-  "code": "OK|ERROR"
+  "code": "OK|ERROR",
   "message": "blah blah"
 }
 ```
 
  ### Kurse listen
 
-`POST		/course							Course.List`
+`POST		/courses						Course.List`
 
 #### REQUEST
 
@@ -128,6 +128,7 @@
     "name": "asd",
     "date": "12.12.2017",
     "time": "12:00",
+    "instructor-key": "0ßc84m5098420"
     "participants": [
       {
         "vorname": "asd",
