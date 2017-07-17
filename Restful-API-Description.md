@@ -15,7 +15,7 @@
 {
   "code": "OK|ERROR",
   "message": "blah blah blah" // bei Error leer.,
-  "key": "2039m4c8094875043mxxncowtn" // bei Error nicht vorhanden.
+  "accesskey": "2039m4c8094875043mxxncowtn" // bei Error nicht vorhanden.
 }
 ```
 
@@ -36,7 +36,7 @@
 {
   "code": "OK|ERROR",
   "message": "blah blah blah" // bei Error leer.,
-  "key": "2039m4c8094875043mxxncowtn" // bei Error nicht vorhanden.
+  "accesskey": "2039m4c8094875043mxxncowtn" // bei Error nicht vorhanden.
 }
 ```
 
@@ -60,11 +60,9 @@
 
 ```json
 {
-  "key": "3m85c0934095c"
+  "accesskey": "3m85c0934095c"
 }
 ```
-
-
 
 #### RESPONSE
 
@@ -72,8 +70,6 @@
 {
   "vorname": "Karl",
   "nachname": "Klaus",
-  "geb": "12.12.2012",
-  "qr-code": "base64 codierter qr-code?", // oder bild zu image
   "qr-code-hash": "mc8w09e8rmpes98fcos98m9"
 }
 ```
@@ -90,10 +86,9 @@
 
 ```json
 {
-	"key": "ahsdkfjsahdf234234234",
+	"accesskey": "ahsdkfjsahdf234234234",
 	"name":"kochen",
-	"date": "12.12.2017",
-  	"time": "12:00"
+	"date": "12.12.2017 12:00:00",
 }
 ```
 
@@ -114,7 +109,7 @@
 
 ```json
 {
-  "key": "09823094caqköldjadf"
+  "accesskey": "09823094caqköldjadf"
 }
 ```
 
@@ -126,9 +121,8 @@
 [
   {
     "name": "asd",
-    "date": "12.12.2017",
-    "time": "12:00",
-    "instructor-key": "0ßc84m5098420"
+    "date": "12.12.2017 12:00:00",
+    "instructor-accesskey": "0ßc84m5098420"
     "participants": [
       {
         "vorname": "asd",
@@ -154,7 +148,7 @@
 
 ```json
 {
-  "key": "09c8m2409mc09r",
+  "accesskey": "09c8m2409mc09r",
   "qr-code-hash": "8m5c098509j8et" // Hash von "vorname_nachname_geb"
 }
 ```

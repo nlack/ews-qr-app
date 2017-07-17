@@ -28,7 +28,7 @@ func getConnectionString() string {
 	port := getParamString("db.port", "")
 	user := getParamString("db.user", "")
 
-	pass := ""
+	pass := "asdf"
 
 	dbname := getParamString("db.name", "")
 	protocol := getParamString("db.protocol", "tcp")
@@ -54,20 +54,26 @@ var InitDb func() = func() {
 	}
 	// Defines the table for use by GORP
 	// This is a function we will create soon.
-	defineCourseTable(Dbm)
+	defineAndFillTables(Dbm)
 
 	if err := Dbm.CreateTablesIfNotExists(); err != nil {
 		revel.ERROR.Fatal(err)
 	}
 }
 
-func defineCourseTable(dbm *gorp.DbMap) {
+func defineAndFillTables(dbm *gorp.DbMap) {
+
 	// set "id" as primary key and autoincrement
 	t := dbm.AddTable(models.Course{}).SetKeys(true, "id")
-	t.ColMap("name").SetMaxSize(25)
-	t = dbm.AddTable(models.User{}).SetKeys(true, "id")
-	t.ColMap("name").SetMaxSize(25)
+	//TODO AddTable Rel Course Participant
+	t = dbm.AddTable(models.Instructor{}).SetKeys(true, "id")
+	t.ColMap("username").SetUnique(true)
+	t = dbm.AddTable(models.Participant{}).SetKeys(true, "id")
+	t.ColMap("username").SetUnique(true)
 
+	//TODO Insert funktioniert noch nicht
+	instr := models.Participant{55, "rollcage", "asdf1234", "Michael", "Sann", "9999ddddd", "kkkkk55555"}
+	dbm.Insert(instr)
 }
 
 func init() {

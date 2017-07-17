@@ -14,7 +14,23 @@
 
 
 
-
+<form action="{{url "Participant.Login"}}" id="formLogin" method="POST">
+  <p class="field">
+    <label>Login Name:</label>
+    <input type="text" name="username" size="19" value="{{.flash.username}}" />
+  </p>
+  <p class="field">
+    <label>Password:</label>
+    <input type="password" name="password" size="19"/>
+  </p>
+  <p class="field">
+    <label>Remember:</label>
+    <input type="checkbox" name="remember" value="true"/>
+  </p>
+  <p class="buttons">
+    <input type="submit" value="Account login" />
+  </p>
+</form>
 
 <div class="container">
   <div class="row">
@@ -24,25 +40,5 @@
   </div>
 </div>
 
-
-
-
-<form action="{{url "App.Login"}}" id="formLogin" method="POST">
-   <p class="field">
-     <label>Login Name:</label>
-     <input type="text" name="username" size="19" value="{{.flash.username}}" />
-   </p>
-   <p class="field">
-     <label>Password:</label>
-     <input type="password" name="password" size="19"/>
-   </p>
-   <p class="field">
-     <label>Instructor:</label>
-     <input type="checkbox" name="instructor" value="true"/>
-   </p>
-   <p class="buttons">
-     <input type="submit" value="Login" />
-   </p>
- </form>
 
 {{template "footer.html" .}}

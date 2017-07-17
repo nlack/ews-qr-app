@@ -29,7 +29,6 @@ func init() {
 		revel.ActionInvoker,           // Invoke the action.
 	}
 
-
 	// register startup functions with OnAppStart
 	// revel.DevMode and revel.RunMode only work inside of OnAppStart. See Example Startup Script
 	// ( order dependent )
@@ -39,7 +38,7 @@ func init() {
 }
 
 // HeaderFilter adds common security headers
-// TODO turn this into revel.HeaderFilter
+// turn this into revel.HeaderFilter
 // should probably also have a filter for CSRF
 // not sure if it can go in the same filter or not
 var HeaderFilter = func(c *revel.Controller, fc []revel.Filter) {
