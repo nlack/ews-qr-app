@@ -14,10 +14,13 @@ case "$(uname -s)" in
      echo 'MS Windows'
      ;;
 
-   # Add here more strings to compare
-   # See correspondence table at the bottom of this answer
 
    *)
      echo 'other OS'
      ;;
 esac
+
+
+
+#notizen
+#datenbank erstellen, query ausführen, per xo models erstellen, backend starten

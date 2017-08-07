@@ -13,9 +13,20 @@
 #### RESPONSE
 ```json
 {
-  "code": "OK|ERROR",
-  "message": "blah blah blah" // bei Error leer.,
-  "accesskey": "2039m4c8094875043mxxncowtn" // bei Error nicht vorhanden.
+    "status" : "success", 
+    "data" : {
+        "accesskey": "2039m4c8094875043mxxncowtn"
+     }
+}
+
+{
+    "status" : "fail", //normalerweise fehler 4xx
+    "data": {"name":"a name is required"}	//zum beispiel wenn der name fehlt
+}
+
+{
+    "status" : "error",	//fehler 5xx
+    "message" : "Unable to communicate with database"
 }
 ```
 
@@ -34,10 +45,22 @@
 #### RESPONSE
 ```json
 {
-  "code": "OK|ERROR",
-  "message": "blah blah blah" // bei Error leer.,
-  "accesskey": "2039m4c8094875043mxxncowtn" // bei Error nicht vorhanden.
+    "status" : "success", 
+    "data" : {
+        "accesskey": "2039m4c8094875043mxxncowtn"
+     }
 }
+
+{
+    "status" : "fail", 
+     "data": {"name":"a name is required"}	
+}
+
+{
+    "status" : "error",
+    "message" : "Unable to communicate with database"
+}
+
 ```
 
 
@@ -68,10 +91,25 @@
 
 ```json
 {
-  "vorname": "Karl",
-  "nachname": "Klaus",
-  "qr-code-hash": "mc8w09e8rmpes98fcos98m9"
+    "status" : "success", 
+    "data" : {
+          	"vorname": "Karl",
+  			"nachname": "Klaus",
+  			"qr-code-hash": "mc8w09e8rmpes98fcos98m9"
+     }
 }
+
+{
+    "status" : "fail", 
+    "data": {"accesskey":"key not found"}	
+}
+
+{
+    "status" : "error",
+    "message" : "Unable to communicate with database"
+}
+
+
 ```
 
 
@@ -95,10 +133,24 @@
 #### RESPONSE
 
 ```json
+
+
 {
-  "code": "OK|ERROR",
-  "message": "blah blah"
+    "status" : "success", 
+    "data" : {     }
 }
+
+{
+    "status" : "fail", 
+    "data": {"name":"a name is required"}
+}
+
+{
+    "status" : "error",
+    "message" : "Unable to communicate with database"
+}
+
+
 ```
 
  ### Kurse listen
@@ -118,26 +170,37 @@
 #### RESPONSE
 
 ```json
-[
-  {
-    "name": "asd",
-    "date": "12.12.2017 12:00:00",
-    "instructor-accesskey": "0ßc84m5098420"
-    "participants": [
-      {
-        "vorname": "asd",
-        "nachname": "asd",
-        "geb": "12.12.2012",
-        "qr-code": "BASE64 IMAGE",
-        "qr-code-hash": "po8nm4973oc8"
-      },
-      {...}
-    ]
-  },
-      {
-        ...
-      }
-]
+{
+	"status": "success",
+	"data": {
+		[{
+				"name": "asd",
+				"date": "12.12.2017 12:00:00",
+				"instructor-accesskey": "0ßc84m5098420",
+				"participants": [{
+					"vorname": "asd",
+					"nachname": "asd",
+					"geb": "12.12.2012",
+					"qr-code": "BASE64 IMAGE",
+					"qr-code-hash": "po8nm4973oc8"
+				}, { /*...*/ }]
+			},
+			{ /*...*/ }
+		]
+	}
+}
+
+{
+	"status": "fail",
+	"data": {
+		"accesskey": "aaccesskey is wrong/required..."
+	}
+}
+
+{
+	"status": "error",
+	"message": "Unable to communicate with database"
+}
 ```
 
 ### Teilnehmer zu Kurs hinzufügen
@@ -160,6 +223,22 @@
   "code": "SUCCESS|ERROR",
   "message": "Teilnehmer nicht gefunden.|Teilnehmer darf nicht teilnehmen."
 }
+
+{
+    "status" : "success", 
+    "data" : { }
+}
+
+{
+    "status" : "fail", 
+    "data": {"qr-code-hash": "Teilnehmer nicht gefunden.|Teilnehmer darf nicht teilnehmen."} 
+}
+
+{
+    "status" : "error",
+    "message" : "Unable to communicate with database"
+}
+
 ```
 
 
