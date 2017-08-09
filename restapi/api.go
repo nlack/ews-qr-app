@@ -1,136 +1,103 @@
-package restapi
+package main
 
 import (
+	"database/sql"
+	"flag"
 	"log"
 	"net/http"
 	"strconv"
 
+	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/go-restful-swagger12"
+	"github.com/knq/dburl"
+	"github.com/nlack/ews-qr-app/restapi/models"
 )
 
 // This example show a complete (GET,PUT,POST,DELETE) conventional example of
 // a REST Resource including documentation to be served by e.g. a Swagger UI
-// It is recommended to create a Resource struct (UserResource) that can encapsulate
+// It is recommended to create a Resource struct (ParticipantResource) that can encapsulate
 // an object that provide domain access (a DAO)
 // It has a Register method including the complete Route mapping to methods together
 // with all the appropriate documentation
 //
-// POST http://localhost:8080/users
-// <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
+// POST http://localhost:8080/participants
+// <Participant><Id>1</Id><Name>Melissa Raspberry</Name></Participant>
 //
-// GET http://localhost:8080/users/1
+// GET http://localhost:8080/participants/1
 //
-// PUT http://localhost:8080/users/1
-// <User><Id>1</Id><Name>Melissa</Name></User>
+// PUT http://localhost:8080/participants/1
+// <Participant><Id>1</Id><Name>Melissa</Name></Participant>
 //
-// DELETE http://localhost:8080/users/1
+// DELETE http://localhost:8080/participants/1
 //
 
-type User struct {
+var flagVerbose = flag.Bool("v", false, "verbose")
+
+var flagURL = flag.String("url", "mysql://root:asdf@localhost/testtt?parseTime=true&sql_mode=ansi", "url")
+var db *sql.DB
+
+type Participant struct {
 	Id, Name string
 }
 
-type UserResource struct {
+type ParticipantResource struct {
 	// normally one would use DAO (data access object)
-	users map[string]User
+	participant models.Participant
 }
 
-func (u UserResource) Register(container *restful.Container) {
+func (u ParticipantResource) Register(container *restful.Container) {
+	// open database
+	var err error
+	db, err = dburl.Open(*flagURL)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	ws := new(restful.WebService)
 	ws.
-		Path("/users").
-		Doc("Manage Users").
+		Path("/participants").
+		Doc("Manage Participants").
 		Consumes(restful.MIME_XML, restful.MIME_JSON).
 		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
 
-	ws.Route(ws.GET("/{user-id}").To(u.findUser).
+	ws.Route(ws.GET("/{participant-id}").To(u.findParticipant).
 		// docs
-		Doc("get a user").
-		Operation("findUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Writes(User{})) // on the response
-
-	ws.Route(ws.PUT("/{user-id}").To(u.updateUser).
-		// docs
-		Doc("update a user").
-		Operation("updateUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		ReturnsError(409, "duplicate user-id", nil).
-		Reads(User{})) // from the request
-
-	ws.Route(ws.POST("").To(u.createUser).
-		// docs
-		Doc("create a user").
-		Operation("createUser").
-		Reads(User{})) // from the request
-
-	ws.Route(ws.DELETE("/{user-id}").To(u.removeUser).
-		// docs
-		Doc("delete a user").
-		Operation("removeUser").
-		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")))
+		Doc("get a participant").
+		Operation("findParticipant").
+		Param(ws.PathParameter("participant-id", "identifier of the participant").DataType("string")).
+		Writes(Participant{})) // on the response
 
 	container.Add(ws)
 }
 
-// GET http://localhost:8080/users/1
+// GET http://localhost:8080/participants/1
 //
-func (u UserResource) findUser(request *restful.Request, response *restful.Response) {
-	id := request.PathParameter("user-id")
-	usr := u.users[id]
-	if len(usr.Id) == 0 {
+func (u ParticipantResource) findParticipant(request *restful.Request, response *restful.Response) {
+	id, err := strconv.Atoi(request.PathParameter("participant-id"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	usr, err := models.ParticipantByID(db, id)
+	if usr == nil {
 		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusNotFound, "404: User could not be found.")
+		response.WriteErrorString(http.StatusNotFound, "404: Participant could not be found.")
+		if err != nil {
+			log.Fatal(err)
+		}
 		return
 	}
 	response.WriteEntity(usr)
 }
 
-// POST http://localhost:8080/users
-// <User><Name>Melissa</Name></User>
-//
-func (u *UserResource) createUser(request *restful.Request, response *restful.Response) {
-	usr := new(User)
-	err := request.ReadEntity(usr)
-	if err != nil {
-		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	usr.Id = strconv.Itoa(len(u.users) + 1) // simple id generation
-	u.users[usr.Id] = *usr
-	response.WriteHeaderAndEntity(http.StatusCreated, usr)
-}
-
-// PUT http://localhost:8080/users/1
-// <User><Id>1</Id><Name>Melissa Raspberry</Name></User>
-//
-func (u *UserResource) updateUser(request *restful.Request, response *restful.Response) {
-	usr := new(User)
-	err := request.ReadEntity(&usr)
-	if err != nil {
-		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		return
-	}
-	u.users[usr.Id] = *usr
-	response.WriteEntity(usr)
-}
-
-// DELETE http://localhost:8080/users/1
-//
-func (u *UserResource) removeUser(request *restful.Request, response *restful.Response) {
-	id := request.PathParameter("user-id")
-	delete(u.users, id)
-}
-
-func asdf() {
+func main() {
 	// to see what happens in the package, uncomment the following
 	//restful.TraceLogger(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile))
 
 	wsContainer := restful.NewContainer()
-	u := UserResource{map[string]User{}}
+	var participant models.Participant
+	u := ParticipantResource{participant}
 	u.Register(wsContainer)
 
 	// Optionally, you can install the Swagger Service which provides a nice Web UI on your REST API
@@ -143,7 +110,7 @@ func asdf() {
 
 		// Optionally, specify where the UI is located
 		SwaggerPath:     "/apidocs/",
-		SwaggerFilePath: "/Users/emicklei/xProjects/swagger-ui/dist"}
+		SwaggerFilePath: "/Participants/emicklei/xProjects/swagger-ui/dist"}
 	swagger.RegisterSwaggerService(config, wsContainer)
 
 	log.Print("start listening on localhost:8080")
