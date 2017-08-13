@@ -2,11 +2,14 @@ package main
 
 import (
 	"database/sql"
-	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 
+	"github.com/gamegos/jsend"
+
+	"github.com/go-playground/validator"
 	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/emicklei/go-restful"
@@ -33,14 +36,8 @@ import (
 // DELETE http://localhost:8080/participants/1
 //
 
-var flagVerbose = flag.Bool("v", false, "verbose")
-
-var flagURL = flag.String("url", "mysql://root:asdf@localhost/testtt?parseTime=true&sql_mode=ansi", "url")
 var db *sql.DB
-
-type Participant struct {
-	Id, Name string
-}
+var validate *validator.Validate
 
 type ParticipantResource struct {
 	// normally one would use DAO (data access object)
@@ -48,28 +45,160 @@ type ParticipantResource struct {
 }
 
 func (u ParticipantResource) Register(container *restful.Container) {
+	validate = validator.New()
 	// open database
 	var err error
-	db, err = dburl.Open(*flagURL)
+	db, err = dburl.Open("mysql://root:asdf@localhost/testtt?parseTime=true&sql_mode=ansi")
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+	}
+	models.XOLog = func(s string, p ...interface{}) {
+		fmt.Printf("-------------------------------------\nQUERY: %s\n  VAL: %v\n", s, p)
 	}
 
 	ws := new(restful.WebService)
-	ws.
-		Path("/participants").
-		Doc("Manage Participants").
-		Consumes(restful.MIME_XML, restful.MIME_JSON).
-		Produces(restful.MIME_JSON, restful.MIME_XML) // you can specify this per route as well
+	ws.Consumes(restful.MIME_JSON).Produces(restful.MIME_JSON) // you can specify this per route as well
 
-	ws.Route(ws.GET("/{participant-id}").To(u.findParticipant).
+	ws.Route(ws.GET("/participants/{participant-id}").To(u.findParticipant).
 		// docs
 		Doc("get a participant").
 		Operation("findParticipant").
 		Param(ws.PathParameter("participant-id", "identifier of the participant").DataType("string")).
-		Writes(Participant{})) // on the response
+		Writes(models.Participant{})) // on the response
+
+	ws.Route(ws.PUT("/participants/{participant-id}").To(u.updateParticipant).
+		// docs
+		Doc("update a participant").
+		Operation("updateParticipant").
+		Param(ws.PathParameter("participant-id", "identifier of the participant").DataType("string")).
+		Returns(409, "duplicate participant-id", nil).
+		Reads(models.Participant{})) // from the request
+
+	ws.Route(ws.POST("/participants").To(u.createParticipant).
+		// docs
+		Doc("create a participant").
+		Operation("createParticipant").
+		Reads(models.Participant{})) // from the request
+
+	ws.Route(ws.DELETE("/participants/{participant-id}").To(u.removeParticipant).
+		// docs
+		Doc("delete a participant").
+		Operation("removeParticipant").
+		Param(ws.PathParameter("participant-id", "identifier of the participant").DataType("string")))
+
+	ws.Route(ws.POST("/participant").To(u.loginParticipant).
+		// docs
+		Doc("participant login").
+		Operation("loginParticipant").
+		Reads(models.Participant{})) // from the request
+
+	ws.Route(ws.POST("/instructor").To(u.loginInstructor).
+		// docs
+		Doc("instructor login").
+		Operation("loginInstructor").
+		Reads(models.Instructor{})) // from the request
 
 	container.Add(ws)
+}
+
+// POST http://localhost:8080/participant
+//
+func (u *ParticipantResource) loginParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	usr := new(models.Participant)
+	err := request.ReadEntity(&usr)
+	if err != nil {
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+		log.Fatal(err.Error())
+		return
+	}
+	err = validate.Var(usr.Name, "required")
+	if err != nil {
+		a := new(struct{ Name string })
+		a.Name = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		return
+	}
+
+	err = validate.Var(usr.Password, "required")
+	if err != nil {
+		a := new(struct{ Password string })
+		a.Password = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		return
+	}
+
+	pwd := usr.Password
+
+	usr, err = models.ParticipantByName(db, usr.Name)
+	if err != nil {
+		a := new(struct{ Name string })
+		a.Name = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+
+	err = validate.Var(usr.Password, fmt.Sprintf("eq=%s", pwd))
+	if err != nil {
+		a := new(struct{ Password string })
+		a.Password = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
+		return
+	}
+
+	a := new(struct{ APIKey string })
+	a.APIKey = usr.Apikey
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(a).Send()
+}
+
+// POST http://localhost:8080/instructor
+//
+func (u *ParticipantResource) loginInstructor(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	usr := new(models.Instructor)
+	err := request.ReadEntity(&usr)
+	if err != nil {
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+		log.Fatal(err.Error())
+		return
+	}
+	err = validate.Var(usr.Name, "required")
+	if err != nil {
+		a := new(struct{ Name string })
+		a.Name = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		return
+	}
+
+	err = validate.Var(usr.Password, "required")
+	if err != nil {
+		a := new(struct{ Password string })
+		a.Password = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		return
+	}
+
+	pwd := usr.Password
+
+	usr, err = models.InstructorByName(db, usr.Name)
+	if err != nil {
+		a := new(struct{ Name string })
+		a.Name = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+
+	err = validate.Var(usr.Password, fmt.Sprintf("eq=%s", pwd))
+	if err != nil {
+		a := new(struct{ Password string })
+		a.Password = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
+		return
+	}
+
+	a := new(struct{ APIKey string })
+	a.APIKey = usr.Apikey
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(a).Send()
 }
 
 // GET http://localhost:8080/participants/1
@@ -77,18 +206,104 @@ func (u ParticipantResource) Register(container *restful.Container) {
 func (u ParticipantResource) findParticipant(request *restful.Request, response *restful.Response) {
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	usr, err := models.ParticipantByID(db, id)
 	if usr == nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusNotFound, "404: Participant could not be found.")
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		return
 	}
 	response.WriteEntity(usr)
+}
+
+// POST http://localhost:8080/participants
+// <Participant><Name>Melissa</Name></Participant>
+//
+func (u *ParticipantResource) createParticipant(request *restful.Request, response *restful.Response) {
+
+	usr := new(models.Participant)
+
+	err := request.ReadEntity(&usr)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(err)
+		return
+	}
+	err = validate.Struct(*usr)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(err.Error())
+		return
+	}
+	err = usr.Save(db)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(err)
+		return
+	}
+	//usr.Id = strconv.Itoa(len(u.participants) + 1) // simple id generation
+	//u.participants[usr.Id] = *usr
+	err = response.WriteHeaderAndEntity(http.StatusCreated, usr)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+// PUT http://localhost:8080/participants/1
+// <Participant><Id>1</Id><Name>Melissa Raspberry</Name></Participant>
+//
+func (u *ParticipantResource) updateParticipant(request *restful.Request, response *restful.Response) {
+	id, err := strconv.Atoi(request.PathParameter("participant-id"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	usr, err := models.ParticipantByID(db, id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = request.ReadEntity(&usr)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(err)
+		return
+	}
+	usr.ID = id
+	err = usr.Update(db)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(err)
+		return
+	}
+	response.WriteEntity(usr)
+}
+
+// DELETE http://localhost:8080/participants/1
+//
+func (u *ParticipantResource) removeParticipant(request *restful.Request, response *restful.Response) {
+	id, err := strconv.Atoi(request.PathParameter("participant-id"))
+	if err != nil {
+		fmt.Println(err)
+	}
+	usr, err := models.ParticipantByID(db, id)
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = usr.Delete(db)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(err)
+		return
+	}
 }
 
 func main() {
@@ -115,5 +330,5 @@ func main() {
 
 	log.Print("start listening on localhost:8080")
 	server := &http.Server{Addr: ":8080", Handler: wsContainer}
-	log.Fatal(server.ListenAndServe())
+	fmt.Println(server.ListenAndServe())
 }

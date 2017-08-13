@@ -155,6 +155,29 @@ func ParticipantByName(db XODB, name string) (*Participant, error) {
 	return &p, nil
 }
 
+func ParticipantByNameAndPW(db XODB, name string, password string) (*Participant, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, name, password, firstname, lastname, apikey, qrhash ` +
+		`FROM testtt.participant ` +
+		`WHERE name = ? AND password = ?`
+
+	// run query
+	XOLog(sqlstr, name, password)
+	p := Participant{
+		_exists: true,
+	}
+
+	err = db.QueryRow(sqlstr, name, password).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Apikey, &p.Qrhash)
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
+}
+
 // ParticipantByID retrieves a row from 'testtt.participant' as a Participant.
 //
 // Generated from index 'participant_id_pkey'.
