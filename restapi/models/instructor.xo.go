@@ -180,6 +180,28 @@ func InstructorByName(db XODB, name string) (*Instructor, error) {
 	return &i, nil
 }
 
+func InstructorByAPIKey(db XODB, apikey string) (*Instructor, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, name, password, firstname, lastname, apikey ` +
+		`FROM testtt.instructor ` +
+		`WHERE apikey = ?`
+
+	// run query
+	XOLog(sqlstr, apikey)
+	i := Instructor{
+		_exists: true,
+	}
+
+	err = db.QueryRow(sqlstr, apikey).Scan(&i.ID, &i.Name, &i.Password, &i.Firstname, &i.Lastname, &i.Apikey)
+	if err != nil {
+		return nil, err
+	}
+	return &i, nil
+}
+
 func InstructorByNameAndPW(db XODB, name string, password string) (*Instructor, error) {
 	var err error
 

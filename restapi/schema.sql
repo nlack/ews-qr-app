@@ -6,8 +6,8 @@
 # https://github.com/sequelpro/sequelpro
 #
 # Host: localhost (MySQL 5.7.18)
-# Datenbank: ddd
-# Erstellt am: 2017-08-07 14:42:42 +0000
+# Datenbank: testtt
+# Erstellt am: 2017-08-15 15:16:21 +0000
 # ************************************************************
 
 
@@ -41,7 +41,10 @@ LOCK TABLES `course` WRITE;
 
 INSERT INTO `course` (`id`, `name`, `date`, `participants`, `instructor_id`)
 VALUES
-	(1,'schwimmen','2017-08-07 16:42:03','alle',1);
+	(1,'schwimmen','2017-08-07 16:42:03','alle',1),
+	(2,'kochen','2017-08-07 16:42:03','',1),
+	(3,'kochen','2017-08-07 16:42:03','',1),
+	(4,'kochen','2017-08-07 16:42:03','',1);
 
 /*!40000 ALTER TABLE `course` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -68,7 +71,9 @@ LOCK TABLES `instructor` WRITE;
 
 INSERT INTO `instructor` (`id`, `name`, `password`, `firstname`, `lastname`, `apikey`)
 VALUES
-	(1,'peter','asdf','peter','l','123asd');
+	(1,'peter','asdf','peter','l','123asd'),
+	(2,'Unknown Master','asdf','peter','asdf','asdf1234'),
+	(3,'ddd','ddd','ddd','ddd','123ddd');
 
 /*!40000 ALTER TABLE `instructor` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -85,7 +90,6 @@ CREATE TABLE `participant` (
   `password` varchar(255) NOT NULL,
   `firstname` varchar(255) NOT NULL,
   `lastname` varchar(255) NOT NULL,
-  `apikey` varchar(255) NOT NULL,
   `qrhash` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`)
@@ -94,9 +98,11 @@ CREATE TABLE `participant` (
 LOCK TABLES `participant` WRITE;
 /*!40000 ALTER TABLE `participant` DISABLE KEYS */;
 
-INSERT INTO `participant` (`id`, `name`, `password`, `firstname`, `lastname`, `apikey`, `qrhash`)
+INSERT INTO `participant` (`id`, `name`, `password`, `firstname`, `lastname`, `qrhash`)
 VALUES
-	(1,'hans','asdf','hans','a','123fdsa','fdsa123');
+	(3,'asdf','dsa','dddd','ss','fdsddda123'),
+	(4,'dddd','asdf','hans','a','fdsa123'),
+	(31,'d','kkk','dddd','ss','fdsddda123');
 
 /*!40000 ALTER TABLE `participant` ENABLE KEYS */;
 UNLOCK TABLES;

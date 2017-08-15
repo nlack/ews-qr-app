@@ -201,3 +201,41 @@ func CoursesByInstructorID(db XODB, instructorID int) ([]*Course, error) {
 
 	return res, nil
 }
+
+// CoursesByInstructorID retrieves a row from 'testtt.course' as a Course.
+//
+// Generated from index 'instructor_id'.
+func ListCourses(db XODB) ([]*Course, error) {
+	var err error
+
+	// sql query
+	const sqlstr = `SELECT ` +
+		`id, name, date, participants, instructor_id ` +
+		`FROM testtt.course `
+
+	// run query
+	XOLog(sqlstr)
+	q, err := db.Query(sqlstr)
+	if err != nil {
+		return nil, err
+	}
+	defer q.Close()
+
+	// load results
+	res := []*Course{}
+	for q.Next() {
+		c := Course{
+			_exists: true,
+		}
+
+		// scan
+		err = q.Scan(&c.ID, &c.Name, &c.Date, &c.Participants, &c.InstructorID)
+		if err != nil {
+			return nil, err
+		}
+
+		res = append(res, &c)
+	}
+
+	return res, nil
+}

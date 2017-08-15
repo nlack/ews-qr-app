@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gamegos/jsend"
 
@@ -86,6 +87,10 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		Operation("removeParticipant").
 		Param(ws.PathParameter("participant-id", "identifier of the participant").DataType("string")))
 
+	//###############################################
+	//###############################################
+	//###############################################
+
 	ws.Route(ws.POST("/participant").To(u.loginParticipant).
 		// docs
 		Doc("participant login").
@@ -98,21 +103,114 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		Operation("loginInstructor").
 		Reads(models.Instructor{})) // from the request
 
+	ws.Route(ws.POST("/courses/add").To(u.addCourse).
+		// docs
+		Doc("add course").
+		Operation("addCourse").
+		Reads(models.Instructor{})) // from the request
+	//TODO READS??
+
+	ws.Route(ws.POST("/courses").To(u.listCourses).
+		// docs
+		Doc("list courses").
+		Operation("listCourses").
+		Reads(models.Instructor{})) // from the request
 	container.Add(ws)
 }
 
-// POST http://localhost:8080/participant
-//
-func (u *ParticipantResource) loginParticipant(request *restful.Request, response *restful.Response) {
+func (u *ParticipantResource) addCourse(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	usr := new(models.Participant)
-	err := request.ReadEntity(&usr)
+	courseInfos := new(struct {
+		Apikey string
+		Name   string
+		Date   string
+	})
+	err := request.ReadEntity(&courseInfos)
 	if err != nil {
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
 		log.Fatal(err.Error())
 		return
 	}
-	err = validate.Var(usr.Name, "required")
+
+	err = validate.Var(courseInfos.Name, "required")
+	if err != nil {
+		a := new(struct{ Name string })
+		a.Name = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+	err = validate.Var(courseInfos.Apikey, "required")
+	if err != nil {
+		a := new(struct{ Apikey string })
+		a.Apikey = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+	err = validate.Var(courseInfos.Date, "required")
+	if err != nil {
+		a := new(struct{ Date string })
+		a.Date = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+
+	usr, err := models.InstructorByAPIKey(db, courseInfos.Apikey)
+	if err != nil {
+		a := new(struct{ Apikey string })
+		a.Apikey = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+	course := new(models.Course)
+	course.Name = courseInfos.Name
+	course.InstructorID = usr.ID
+	course.Date, err = time.Parse("2006-01-02 15:04:05", courseInfos.Date)
+	if err != nil {
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+		log.Fatal(err.Error())
+		return
+	}
+	course.Save(db)
+
+}
+
+func (u *ParticipantResource) listCourses(request *restful.Request, response *restful.Response) {
+	a := new(struct{ Apikey string })
+	err := request.ReadEntity(&a)
+	if err != nil {
+		a.Apikey = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+
+	_, err = models.InstructorByAPIKey(db, a.Apikey)
+	if err != nil {
+		a := new(struct{ Apikey string })
+		a.Apikey = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		return
+	}
+	courses, err := models.ListCourses(db)
+	if err != nil {
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+		log.Fatal(err.Error())
+		return
+	}
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(courses).Send()
+
+}
+
+// POST http://localhost:8080/participant
+func (u *ParticipantResource) loginParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	p := new(models.Participant)
+	err := request.ReadEntity(&p)
+	if err != nil {
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+		log.Fatal(err.Error())
+		return
+	}
+	err = validate.Var(p.Name, "required")
 	if err != nil {
 		a := new(struct{ Name string })
 		a.Name = err.Error()
@@ -120,7 +218,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		return
 	}
 
-	err = validate.Var(usr.Password, "required")
+	err = validate.Var(p.Password, "required")
 	if err != nil {
 		a := new(struct{ Password string })
 		a.Password = err.Error()
@@ -128,9 +226,9 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		return
 	}
 
-	pwd := usr.Password
+	pwd := p.Password
 
-	usr, err = models.ParticipantByName(db, usr.Name)
+	p, err = models.ParticipantByName(db, p.Name)
 	if err != nil {
 		a := new(struct{ Name string })
 		a.Name = err.Error()
@@ -138,7 +236,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		return
 	}
 
-	err = validate.Var(usr.Password, fmt.Sprintf("eq=%s", pwd))
+	err = validate.Var(p.Password, fmt.Sprintf("eq=%s", pwd))
 	if err != nil {
 		a := new(struct{ Password string })
 		a.Password = err.Error()
@@ -146,9 +244,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		return
 	}
 
-	a := new(struct{ APIKey string })
-	a.APIKey = usr.Apikey
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(a).Send()
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(p).Send()
 }
 
 // POST http://localhost:8080/instructor
@@ -224,9 +320,7 @@ func (u ParticipantResource) findParticipant(request *restful.Request, response 
 // <Participant><Name>Melissa</Name></Participant>
 //
 func (u *ParticipantResource) createParticipant(request *restful.Request, response *restful.Response) {
-
 	usr := new(models.Participant)
-
 	err := request.ReadEntity(&usr)
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")

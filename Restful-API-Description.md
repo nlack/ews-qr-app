@@ -13,9 +13,12 @@
 #### RESPONSE
 ```json
 {
-    "status" : "success", 
+    "status" : "success",
     "data" : {
-        "accesskey": "2039m4c8094875043mxxncowtn"
+   		"name":
+   		"firstname":
+   		"lastname":
+        "qrhash": "2039m4c8094875043mxxncowtn"
      }
 }
 
@@ -45,15 +48,15 @@
 #### RESPONSE
 ```json
 {
-    "status" : "success", 
+    "status" : "success",
     "data" : {
-        "accesskey": "2039m4c8094875043mxxncowtn"
+        "apikey": "2039m4c8094875043mxxncowtn"
      }
 }
 
 {
-    "status" : "fail", 
-     "data": {"name":"a name is required"}	
+    "status" : "fail",
+     "data": {"name":"a name is required"}
 }
 
 {
@@ -66,51 +69,6 @@
 
 
 
-
-
-
-
-
-
-
-## Routen nur für Teilnehmer zugänglich
-
-### Rufe QR-Code (in Base64 codier?) ab
-
-`POST     /participient/:id                                  Participient.Show`
-
-#### REQUEST
-
-```json
-{
-  "accesskey": "3m85c0934095c"
-}
-```
-
-#### RESPONSE
-
-```json
-{
-    "status" : "success", 
-    "data" : {
-          	"vorname": "Karl",
-  			"nachname": "Klaus",
-  			"qr-code-hash": "mc8w09e8rmpes98fcos98m9"
-     }
-}
-
-{
-    "status" : "fail", 
-    "data": {"accesskey":"key not found"}	
-}
-
-{
-    "status" : "error",
-    "message" : "Unable to communicate with database"
-}
-
-
-```
 
 
 
@@ -124,9 +82,9 @@
 
 ```json
 {
-	"accesskey": "ahsdkfjsahdf234234234",
+	"apikey": "ahsdkfjsahdf234234234",
 	"name":"kochen",
-	"date": "12.12.2017 12:00:00",
+	"date": "2017-08-07 16:42:03",
 }
 ```
 
@@ -136,12 +94,12 @@
 
 
 {
-    "status" : "success", 
+    "status" : "success",
     "data" : {     }
 }
 
 {
-    "status" : "fail", 
+    "status" : "fail",
     "data": {"name":"a name is required"}
 }
 
@@ -161,7 +119,7 @@
 
 ```json
 {
-  "accesskey": "09823094caqköldjadf"
+  "apikey": "09823094caqköldjadf"
 }
 ```
 
@@ -175,8 +133,8 @@
 	"data": {
 		[{
 				"name": "asd",
-				"date": "12.12.2017 12:00:00",
-				"instructor-accesskey": "0ßc84m5098420",
+				"date": "2017-08-07 16:42:03",
+				"instructor-apikey": "0ßc84m5098420",
 				"participants": [{
 					"vorname": "asd",
 					"nachname": "asd",
@@ -193,7 +151,7 @@
 {
 	"status": "fail",
 	"data": {
-		"accesskey": "aaccesskey is wrong/required..."
+		"apikey": "aapikey is wrong/required..."
 	}
 }
 
@@ -211,7 +169,7 @@
 
 ```json
 {
-  "accesskey": "09c8m2409mc09r",
+  "apikey": "09c8m2409mc09r",
   "qr-code-hash": "8m5c098509j8et" // Hash von "vorname_nachname_geb"
 }
 ```
@@ -225,13 +183,13 @@
 }
 
 {
-    "status" : "success", 
+    "status" : "success",
     "data" : { }
 }
 
 {
-    "status" : "fail", 
-    "data": {"qr-code-hash": "Teilnehmer nicht gefunden.|Teilnehmer darf nicht teilnehmen."} 
+    "status" : "fail",
+    "data": {"qr-code-hash": "Teilnehmer nicht gefunden.|Teilnehmer darf nicht teilnehmen."}
 }
 
 {
@@ -240,6 +198,3 @@
 }
 
 ```
-
-
-

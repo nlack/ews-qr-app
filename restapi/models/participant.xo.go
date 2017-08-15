@@ -12,7 +12,6 @@ type Participant struct {
 	Password  string `json:"password"`  // password
 	Firstname string `json:"firstname"` // firstname
 	Lastname  string `json:"lastname"`  // lastname
-	Apikey    string `json:"apikey"`    // apikey
 	Qrhash    string `json:"qrhash"`    // qrhash
 
 	// xo fields
@@ -40,14 +39,14 @@ func (p *Participant) Insert(db XODB) error {
 
 	// sql insert query, primary key provided by autoincrement
 	const sqlstr = `INSERT INTO testtt.participant (` +
-		`name, password, firstname, lastname, apikey, qrhash` +
+		`name, password, firstname, lastname, qrhash` +
 		`) VALUES (` +
 		`?, ?, ?, ?, ?, ?` +
 		`)`
 
 	// run query
-	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Apikey, p.Qrhash)
-	res, err := db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Apikey, p.Qrhash)
+	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash)
+	res, err := db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash)
 	if err != nil {
 		return err
 	}
@@ -81,12 +80,12 @@ func (p *Participant) Update(db XODB) error {
 
 	// sql query
 	const sqlstr = `UPDATE testtt.participant SET ` +
-		`name = ?, password = ?, firstname = ?, lastname = ?, apikey = ?, qrhash = ?` +
+		`name = ?, password = ?, firstname = ?, lastname = ?, qrhash = ?` +
 		` WHERE id = ?`
 
 	// run query
-	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Apikey, p.Qrhash, p.ID)
-	_, err = db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Apikey, p.Qrhash, p.ID)
+	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.ID)
+	_, err = db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.ID)
 	return err
 }
 
@@ -137,7 +136,7 @@ func ParticipantByName(db XODB, name string) (*Participant, error) {
 
 	// sql query
 	const sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, apikey, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash ` +
 		`FROM testtt.participant ` +
 		`WHERE name = ?`
 
@@ -147,7 +146,7 @@ func ParticipantByName(db XODB, name string) (*Participant, error) {
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, name).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Apikey, &p.Qrhash)
+	err = db.QueryRow(sqlstr, name).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
 	if err != nil {
 		return nil, err
 	}
@@ -160,7 +159,7 @@ func ParticipantByNameAndPW(db XODB, name string, password string) (*Participant
 
 	// sql query
 	const sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, apikey, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash ` +
 		`FROM testtt.participant ` +
 		`WHERE name = ? AND password = ?`
 
@@ -170,7 +169,7 @@ func ParticipantByNameAndPW(db XODB, name string, password string) (*Participant
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, name, password).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Apikey, &p.Qrhash)
+	err = db.QueryRow(sqlstr, name, password).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +185,7 @@ func ParticipantByID(db XODB, id int) (*Participant, error) {
 
 	// sql query
 	const sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, apikey, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash ` +
 		`FROM testtt.participant ` +
 		`WHERE id = ?`
 
@@ -196,7 +195,7 @@ func ParticipantByID(db XODB, id int) (*Participant, error) {
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, id).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Apikey, &p.Qrhash)
+	err = db.QueryRow(sqlstr, id).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
 	if err != nil {
 		return nil, err
 	}
