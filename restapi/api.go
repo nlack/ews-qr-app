@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
 	"github.com/gamegos/jsend"
+	"github.com/joho/godotenv"
 
 	"github.com/go-playground/validator"
 	_ "github.com/go-sql-driver/mysql"
@@ -49,7 +51,7 @@ func (u ParticipantResource) Register(container *restful.Container) {
 	validate = validator.New()
 	// open database
 	var err error
-	db, err = dburl.Open("mysql://root:asdf@localhost/testtt?parseTime=true&sql_mode=ansi")
+	db, err = dburl.Open("mysql://root:" + os.Getenv("DBPassword") + "@localhost/testtt?parseTime=true&sql_mode=ansi")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -401,6 +403,10 @@ func (u *ParticipantResource) removeParticipant(request *restful.Request, respon
 }
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 	// to see what happens in the package, uncomment the following
 	//restful.TraceLogger(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile))
 
@@ -414,7 +420,7 @@ func main() {
 	// Open http://localhost:8080/apidocs and enter http://localhost:8080/apidocs.json in the api input field.
 	config := swagger.Config{
 		WebServices:    wsContainer.RegisteredWebServices(), // you control what services are visible
-		WebServicesUrl: "http://localhost:8080",
+		WebServicesUrl: "http://localhost:" + os.Getenv("APIPORT"),
 		ApiPath:        "/apidocs.json",
 
 		// Optionally, specify where the UI is located
@@ -422,7 +428,7 @@ func main() {
 		SwaggerFilePath: "/Participants/emicklei/xProjects/swagger-ui/dist"}
 	swagger.RegisterSwaggerService(config, wsContainer)
 
-	log.Print("start listening on localhost:8080")
-	server := &http.Server{Addr: ":8080", Handler: wsContainer}
+	log.Print("start listening on localhost:" + os.Getenv("APIPORT"))
+	server := &http.Server{Addr: ":" + os.Getenv("APIPORT"), Handler: wsContainer}
 	fmt.Println(server.ListenAndServe())
 }
