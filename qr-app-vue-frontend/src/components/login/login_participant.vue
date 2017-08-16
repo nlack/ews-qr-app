@@ -1,21 +1,69 @@
 <template>
   <div id="login_participant">
     <div class="title" >Mitglieder Login:</div><br>
-    <input placeholder="Benutzer" class="text-input" type="text" name="" value="" autofocus><br>
-    <input placeholder="Passwort" class="password-input" type="password" name="" value=""><br>
-    <button class="backButton" type="button" v-on:click="goBack()" >Zurück</button>
-    <button class="loginButton" type="button" v-on:click="" >Login</button>
+    <input id="par_user" v-model="par_user" placeholder="Benutzer" class="text-input" type="text" name="" value="" autofocus><br>
+    <input id="par_pass" v-model="par_pass" placeholder="Passwort" class="password-input" type="password" name="" value=""><br>
+	</br>
+		<b-button variant="primary" style="width: 120px;" v-on:click="goBack()" >Zurück</b-button>
+		<b-button variant="warning" style="width: 120px;" v-on:click="tryLogin()" >Login</b-button>
+		<p v-if="error_par_msg_01" >Bitte Benutzer / Passwort eingeben.</p>
   </div>
 </template>
 
 <script>
 import router from '@/router/index'
+import axios from 'axios';
+
 export default {
   name: 'login_participant',
+	data: () => {
+		return {
+			par_user: '',
+			par_pass: '',
+			error_par_msg_01: false,
+		};
+	},
   methods: {
     goBack: function() {
       router.push({name: "login_selection"})
-    }
+    },
+		tryLogin: function() {
+			// Extract login credentials
+			let user = this.par_user;
+			let password = this.par_pass;
+
+			// Clear input fields
+			document.querySelector('#par_user').value = "";
+			document.querySelector('#par_pass').value = "";
+
+			// Validate input
+			if (user && password) {
+				axios.post( process.env.API_URL + '/participant', {
+					name: user,
+					password: password
+				})
+				.then((response) => {
+					let resStatus = response.data.status;
+					let resData = response.data.data;
+					if (resStatus !== "success") {
+						// ERROR STATE
+						console.log("LOGIN FAILED");
+					} else {
+						// SUCCESS STATE
+						localStorage.setItem('participant_lastname', resData.lastname)
+						localStorage.setItem('participant_firstname', resData.firstname)
+						localStorage.setItem('participant_qrcode', resData.qrhash)
+						// GOTO ROUTE
+      			router.push({name: "show_participant"})
+					}
+				})
+				.catch((err) => {
+					console.error(err);
+				});
+			} else {
+				this.error_par_msg_01 = true;
+			}
+		}
   }
 }
 </script>

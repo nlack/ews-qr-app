@@ -1,8 +1,9 @@
 
 <template>
   <div id="login_selection">
-  <button class="participant" v-on:click="loadParticipantLogin" >Teilnehmer</button> </br>
-  <button class="instructor" v-on:click="loadInstructorLogin" >Trainer</button>
+	</br>
+		<b-button variant="primary" style="width: 200px;" v-on:click="loadParticipantLogin" >Teilnehmer</b-button></br></br>
+		<b-button variant="warning" style="width: 200px;" v-on:click="loadInstructorLogin" >Trainer</b-button>
   </div>
 </template>
 
