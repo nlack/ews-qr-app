@@ -19,7 +19,7 @@ Front End to use the qr-backend
 
 ## Requirements
 
-- `Node 8.1+` 
+- `Node 8.1+`
 - Optional run with Docker
 
 ## Configuration
@@ -70,7 +70,7 @@ Example address:
 # install dependencies
 npm install
 
-# serve with hot reload at localhost:8080
+# serve with hot reload at localhost:1337
 npm run dev
 
 # build for production with minification
