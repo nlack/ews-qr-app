@@ -2,6 +2,68 @@
 
 > A Vue.js project
 
+Front End to use the qr-backend
+
+## Features
+- [x] Login as participant
+- [x] Logout as participant
+- [x] Login as instructor
+- [x] Logout as instructor
+- [x] Show participant qr-code
+- [x] Show instructor course list
+
+
+- [ ] Show instructor register participant to course window
+- [ ] Validate all routes
+- [ ] Validate login forms
+
+## Requirements
+
+- `Node 8.1+` 
+- Optional run with Docker
+
+## Configuration
+
+Need to change URL to backend server!
+
+Edit file `qr-app-vue-frontend/config/prod.env.js`
+
+Replace `URL` in `API_URL: '"URL"'` with you own configuration.
+
+## Run with Docker
+
+Goto vue project folder
+
+`cd $VUE_PROJECT`
+
+Build docker container
+
+`docker build . -t vue-qr-app`
+
+Run docker container
+
+`docker run vue-qr-app:latest`
+
+visit: http://DOCKER_CONTAINER_IP:1337
+
+#### Get docker DOCKER_CONTAINER_IP with the following steps:
+
+Get CONTAINER_ID with:
+
+`docker container ps`
+
+than run:
+
+`docker inspect CONTAINER_ID | grep '"IPAddress"' | head -n 1`
+
+Example output:
+
+`"IPAddress": "172.17.0.2",`
+
+Example address:
+
+`http://172.17.0.2:1337`
+
 ## Build Setup
 
 ``` bash
