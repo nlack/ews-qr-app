@@ -105,7 +105,7 @@ export default {
 			this.currentPage = 1;
 		},
 		showAddParticipants() {
-
+			router.push({ name: 'course_register' });
 		}
   }
 }
