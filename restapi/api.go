@@ -74,6 +74,15 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		fmt.Printf("-------------------------------------\nQUERY: %s\n  VAL: %v\n", s, p)
 	}
 
+	cors := restful.CrossOriginResourceSharing{
+		ExposeHeaders:  []string{"X-My-Header"},
+		AllowedHeaders: []string{"Content-Type", "Accept"},
+		AllowedMethods: []string{"GET", "POST"},
+		CookiesAllowed: false,
+		Container:      container}
+
+	container.Filter(cors.Filter)
+
 	ws := new(restful.WebService)
 	ws.Consumes(restful.MIME_JSON).Produces(restful.MIME_JSON) // you can specify this per route as well
 
