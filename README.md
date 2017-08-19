@@ -3,22 +3,33 @@
 
 ## https://docs.google.com/document/d/1HIpriDYh-GEX94c3GlFzd-gVClvEjl5PzmjZnfH8DzU/edit?usp=sharing
 
-### BACKEND INSTALLATION
+## BACKEND INSTALLATION
 
-## System Requirements
+### System Requirements
+- Install mysql-server
 - Install golang
 - set `$GOPATH`
 
-## Build Requirements
+### Configure MySQL
+#### Create database user
+``
+#### Create database
+``
+
+### Build Requirements
 `go get github.com/gamegos/jsend`  
 `go get github.com/go-playground/validator`  
 `go get github.com/knq/dburl`  
 `go get github.com/emicklei/go-restful`  
 `go get github.com/emicklei/go-restful-swagger12`  
+`go get github.com/joho/godotenv`
 
-## Clone Project Code
+### Clone Project Code
 `go get github.com/nlack/ews-qr-app/respapi`  
 
-## Build Project
+### Build Project
 `cd $GOTPATH/github.com/nlack/ews-qr-app/respapi`  
 `go build api.go`  
+
+### run project
+`./api`
