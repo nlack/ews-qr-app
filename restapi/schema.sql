@@ -22,7 +22,7 @@
 
 # Export von Tabelle course
 # ------------------------------------------------------------
-
+use ewsdb
 DROP TABLE IF EXISTS `course`;
 
 CREATE TABLE `course` (

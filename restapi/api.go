@@ -2,14 +2,14 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
-
-	"math/rand"
 
 	"github.com/gamegos/jsend"
 	"github.com/go-playground/validator"
@@ -55,6 +55,7 @@ func randomString(length int) string {
 
 var db *sql.DB
 var validate *validator.Validate
+var noproxy = flag.Bool("noproxy", false, "no proxy")
 
 type ParticipantResource struct {
 	// normally one would use DAO (data access object)
@@ -134,8 +135,20 @@ func (u ParticipantResource) Register(container *restful.Container) {
 	container.Add(ws)
 }
 
+func setHeaders(response *restful.Response) {
+	response.AddHeader("Access-Control-Allow-Origin", "*")
+	response.AddHeader("Access-Control-Allow-Credentials", "true")
+	response.AddHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+	response.AddHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+}
+
 func (u *ParticipantResource) addCourse(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
+
+	if *noproxy {
+		setHeaders(response)
+	}
+
 	courseInfos := new(struct {
 		Apikey string
 		Name   string
@@ -191,6 +204,11 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 }
 
 func (u *ParticipantResource) listCourses(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+
+	if *noproxy {
+		setHeaders(response)
+	}
 	a := new(struct{ Apikey string })
 	err := request.ReadEntity(&a)
 	if err != nil {
@@ -219,6 +237,10 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 // POST http://localhost:8080/participant
 func (u *ParticipantResource) loginParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
+
+	if *noproxy {
+		setHeaders(response)
+	}
 	p := new(models.Participant)
 	err := request.ReadEntity(&p)
 	if err != nil {
@@ -267,6 +289,9 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 //
 func (u *ParticipantResource) loginInstructor(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
 	usr := new(models.Instructor)
 	err := request.ReadEntity(&usr)
 	if err != nil {
@@ -307,7 +332,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
 		return
 	}
-
+	//TODO create apikey
 	a := new(struct{ APIKey string })
 	a.APIKey = usr.Apikey
 	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(a).Send()
@@ -316,6 +341,10 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 // GET http://localhost:8080/participants/1
 //
 func (u ParticipantResource) findParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
 		fmt.Println(err)
@@ -336,6 +365,10 @@ func (u ParticipantResource) findParticipant(request *restful.Request, response 
 // <Participant><Name>Melissa</Name></Participant>
 //
 func (u *ParticipantResource) createParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
 	usr := new(models.Participant)
 	err := request.ReadEntity(&usr)
 	if err != nil {
@@ -371,6 +404,10 @@ func (u *ParticipantResource) createParticipant(request *restful.Request, respon
 // <Participant><Id>1</Id><Name>Melissa Raspberry</Name></Participant>
 //
 func (u *ParticipantResource) updateParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
 		fmt.Println(err)
@@ -400,6 +437,10 @@ func (u *ParticipantResource) updateParticipant(request *restful.Request, respon
 // DELETE http://localhost:8080/participants/1
 //
 func (u *ParticipantResource) removeParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
 		fmt.Println(err)
