@@ -7,12 +7,12 @@ import "errors"
 
 // Participant represents a row from 'testtt.participant'.
 type Participant struct {
-	ID        int    `json:"id"`        // id
-	Name      string `json:"name"`      // name
-	Password  string `json:"password"`  // password
-	Firstname string `json:"firstname"` // firstname
-	Lastname  string `json:"lastname"`  // lastname
-	Qrhash    string `json:"qrhash"`    // qrhash
+	ID        int    `json:"id"`                       // id
+	Name      string `json:"name"`                     // name
+	Password  string `json:"password"`                 // password
+	Firstname string `json:"firstname"`                // firstname
+	Lastname  string `json:"lastname"`                 // lastname
+	Qrhash    string `json:"qrhash" validate:"len=25"` // qrhash
 
 	// xo fields
 	_exists, _deleted bool
@@ -41,7 +41,7 @@ func (p *Participant) Insert(db XODB) error {
 	const sqlstr = `INSERT INTO testtt.participant (` +
 		`name, password, firstname, lastname, qrhash` +
 		`) VALUES (` +
-		`?, ?, ?, ?, ?, ?` +
+		`?, ?, ?, ?, ?` +
 		`)`
 
 	// run query

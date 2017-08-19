@@ -9,11 +9,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gamegos/jsend"
-	"github.com/joho/godotenv"
+	"math/rand"
 
+	"github.com/gamegos/jsend"
 	"github.com/go-playground/validator"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 
 	"github.com/emicklei/go-restful"
 	"github.com/emicklei/go-restful-swagger12"
@@ -38,6 +39,19 @@ import (
 //
 // DELETE http://localhost:8080/participants/1
 //
+const charset = "abcdefghijklmnopqrstuvwxyz" +
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+var seededRand *rand.Rand = rand.New(
+	rand.NewSource(time.Now().UnixNano()))
+
+func randomString(length int) string {
+	b := make([]byte, length)
+	for i := range b {
+		b[i] = charset[seededRand.Intn(len(charset))]
+	}
+	return string(b)
+}
 
 var db *sql.DB
 var validate *validator.Validate
@@ -51,7 +65,7 @@ func (u ParticipantResource) Register(container *restful.Container) {
 	validate = validator.New()
 	// open database
 	var err error
-	db, err = dburl.Open("mysql://root:" + os.Getenv("DBPassword") + "@localhost/testtt?parseTime=true&sql_mode=ansi")
+	db, err = dburl.Open("mysql://" + os.Getenv("DBUser") + ":" + os.Getenv("DBPassword") + "@" + os.Getenv("DBHost") + "/" + os.Getenv("DBName") + "?parseTime=true&sql_mode=ansi")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -330,6 +344,7 @@ func (u *ParticipantResource) createParticipant(request *restful.Request, respon
 		fmt.Println(err)
 		return
 	}
+	usr.Qrhash = randomString(25)
 	err = validate.Struct(*usr)
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")

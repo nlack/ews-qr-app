@@ -6,7 +6,7 @@
 ### BACKEND INSTALLATION
 
 ## System Requirements
-- Install golang
+- Install golang (https://golang.org/doc/install#install)
 - set `$GOPATH`
 
 ## Build Requirements
