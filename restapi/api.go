@@ -165,7 +165,7 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 	if err != nil {
 		a := new(struct{ Name string })
 		a.Name = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send() //TODO bessere Fehlermeldungen
 		return
 	}
 	err = validate.Var(courseInfos.Apikey, "required")
@@ -459,6 +459,7 @@ func (u *ParticipantResource) removeParticipant(request *restful.Request, respon
 }
 
 func main() {
+	flag.Parse()
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
