@@ -5,6 +5,7 @@ package models
 
 import (
 	"errors"
+	"os"
 	"time"
 )
 
@@ -40,7 +41,7 @@ func (c *Course) Insert(db XODB) error {
 	}
 
 	// sql insert query, primary key provided by autoincrement
-	const sqlstr = `INSERT INTO testtt.course (` +
+	var sqlstr = `INSERT INTO ` + os.Getenv("DBName") + `.course (` +
 		`name, date, participants, instructor_id` +
 		`) VALUES (` +
 		`?, ?, ?, ?` +
@@ -81,7 +82,7 @@ func (c *Course) Update(db XODB) error {
 	}
 
 	// sql query
-	const sqlstr = `UPDATE testtt.course SET ` +
+	var sqlstr = `UPDATE ` + os.Getenv("DBName") + `.course SET ` +
 		`name = ?, date = ?, participants = ?, instructor_id = ?` +
 		` WHERE id = ?`
 
@@ -115,7 +116,7 @@ func (c *Course) Delete(db XODB) error {
 	}
 
 	// sql query
-	const sqlstr = `DELETE FROM testtt.course WHERE id = ?`
+	var sqlstr = `DELETE FROM ` + os.Getenv("DBName") + `.course WHERE id = ?`
 
 	// run query
 	XOLog(sqlstr, c.ID)
@@ -144,9 +145,9 @@ func CourseByID(db XODB, id int) (*Course, error) {
 	var err error
 
 	// sql query
-	const sqlstr = `SELECT ` +
+	var sqlstr = `SELECT ` +
 		`id, name, date, participants, instructor_id ` +
-		`FROM testtt.course ` +
+		`FROM ` + os.Getenv("DBName") + `.course ` +
 		`WHERE id = ?`
 
 	// run query
@@ -170,9 +171,9 @@ func CoursesByInstructorID(db XODB, instructorID int) ([]*Course, error) {
 	var err error
 
 	// sql query
-	const sqlstr = `SELECT ` +
+	var sqlstr = `SELECT ` +
 		`id, name, date, participants, instructor_id ` +
-		`FROM testtt.course ` +
+		`FROM ` + os.Getenv("DBName") + `.course ` +
 		`WHERE instructor_id = ?`
 
 	// run query
@@ -209,9 +210,9 @@ func ListCourses(db XODB) ([]*Course, error) {
 	var err error
 
 	// sql query
-	const sqlstr = `SELECT ` +
+	var sqlstr = `SELECT ` +
 		`id, name, date, participants, instructor_id ` +
-		`FROM testtt.course `
+		`FROM ` + os.Getenv("DBName") + `.course `
 
 	// run query
 	XOLog(sqlstr)

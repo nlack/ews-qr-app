@@ -91,7 +91,7 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		Returns(409, "duplicate participant-id", nil).
 		Reads(models.Participant{})) // from the request
 
-	ws.Route(ws.POST("/participants").To(u.createParticipant).
+	ws.Route(ws.POST("/participant/add").To(u.createParticipant). //TODO
 		// docs
 		Doc("create a participant").
 		Operation("createParticipant").

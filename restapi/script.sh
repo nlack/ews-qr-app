@@ -32,7 +32,7 @@ case "$(uname -s)" in
      ;;
 esac
 
-go get github.com/nlack/ews-qr-app/tree/master/restapi
+go get github.com/nlack/ews-qr-app/restapi
 go get github.com/gamegos/jsend
 go get github.com/go-playground/validator
 go get github.com/knq/dburl
