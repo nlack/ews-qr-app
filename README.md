@@ -10,11 +10,20 @@
 - Install golang
 - set `$GOPATH`
 
-### Configure MySQL
-#### Create database user
-``
+### Configurate MySQL
+Login as root on mysql server
 #### Create database
-``
+change databasename
+`CREATE DATABASE databasename`
+#### Create database user
+change 'newuser' and 'password'
+`CREATE USER 'newuser'@'localhost' IDENTIFIED BY 'password';`
+#### Give permissions to user
+change 'newuser' and
+`GRANT ALL PRIVILEGES ON dbname.* TO 'newuser'@'localhost';`
+#### Reload privileges
+`FLUSH PRIVILEGES;`
+
 
 ### Build Requirements
 `go get github.com/gamegos/jsend`  
