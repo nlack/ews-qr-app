@@ -22,6 +22,12 @@ import router from '@/router/index'
 import axios from 'axios'
 const Instascan = require('instascan-ngfar')
 
+//TODO: speichere geklickten kurs als localStorage
+//TODO: prüfe beim betreten der route, ob dieser storage gesetzt ist reouting zu /courses
+//TODO: falls nicht
+
+//TODO: add register ajax call on successfully scanned qr-code
+//TODO: list allready registered users, update on every register?
 
 export default {
   name: 'courses',
@@ -50,6 +56,7 @@ export default {
 			    scanner.start(cameras[0]);
 			  } else {
 			    console.error('No cameras found.');
+					router.push({name: "courses"});
 			  }
 			}).catch(function (e) {
 			  console.error(e);

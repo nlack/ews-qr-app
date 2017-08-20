@@ -17,6 +17,9 @@
 
 <script>
 import router from '@/router/index'
+
+//TODO: hinzufügen von QR-CODE aus String lib
+
 export default {
   name: 'show_participant',
   methods: {

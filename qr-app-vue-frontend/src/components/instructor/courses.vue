@@ -62,6 +62,7 @@
 import router from '@/router/index'
 import axios from 'axios';
 
+//TODO: add nested list for course participants
 
 export default {
   name: 'courses',

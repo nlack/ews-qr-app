@@ -39,8 +39,8 @@ export default {
 			// Validate input
 			if (user && password) {
 				axios.post(process.env.API_URL + '/instructor', {
-						name: user,
-						password: password
+						"name": user,
+						"password": password
 				})
 				.then((response) => {
 					let resStatus = response.data.status;
@@ -52,7 +52,7 @@ export default {
 					} else {
 						localStorage.setItem("ins_api_key", resData.apikey);
 						axios.post(process.env.API_URL + '/courses', {
-							apikey: resData.apikey
+							"apikey": resData.apikey
 						})
 						.then((response) => {
 							let resStatus = response.data.status;

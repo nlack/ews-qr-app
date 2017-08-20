@@ -39,8 +39,8 @@ export default {
 			// Validate input
 			if (user && password) {
 				axios.post( process.env.API_URL + '/participant', {
-					name: user,
-					password: password
+					"name": user,
+					"password": password
 				})
 				.then((response) => {
 					let resStatus = response.data.status;
