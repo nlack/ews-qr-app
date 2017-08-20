@@ -302,12 +302,10 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 				Name      string
 				Firstname string
 				Lastname  string
-				Qrhash    string
 			})
 			a.Name = part.Name
 			a.Firstname = part.Firstname
 			a.Lastname = part.Lastname
-			a.Qrhash = part.Qrhash
 			if err != nil {
 				serverError(response, err)
 				return
