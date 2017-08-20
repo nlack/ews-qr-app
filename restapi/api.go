@@ -162,8 +162,13 @@ func setHeaders(response *restful.Response) {
 }
 
 func serverError(response *restful.Response, err error) {
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message("Internal Server Error").Send()
-	fmt.Println(errors.Wrap(err, 1))
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(http.StatusText(http.StatusInternalServerError)).Send()
+	fmt.Println(errors.Wrap(err, 0).ErrorStack())
+}
+
+func badRequest(response *restful.Response, err error) {
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusBadRequest).Message(http.StatusText(http.StatusBadRequest)).Send()
+	fmt.Println(errors.Wrap(err, 0).ErrorStack())
 }
 
 func (u *ParticipantResource) addParticipant(request *restful.Request, response *restful.Response) {
@@ -185,27 +190,29 @@ func (u *ParticipantResource) addParticipant(request *restful.Request, response 
 	fmt.Println("apikey" + a.Apikey)
 	_, err = models.InstructorByAPIKey(db, a.Apikey)
 	if err != nil {
-		panic(err)
-
-		//TODO not authorized
+		badRequest(response, err)
+		return
 	}
 
 	coursePart := new(models.Courseparticipant)
 
 	part, err := models.ParticipantByQrhash(db, a.Qrhash)
 	if err != nil {
-		panic(err)
+		serverError(response, err)
+		return
 	}
 	coursePart.Courseid, err = strconv.Atoi(request.PathParameter("course-id"))
 	if err != nil {
-		panic(err)
+		serverError(response, err)
+		return
 	}
 	coursePart.Participantid = part.ID
 	err = coursePart.Save(db)
 	if err != nil {
-		panic(err)
+		serverError(response, err)
+		return
 	}
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Send()
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Send()
 
 }
 
@@ -229,35 +236,17 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 
 	err = validate.Var(courseInfos.Name, "required")
 	if err != nil {
-		a := new(struct{ Name string })
-		a.Name = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send() //TODO bessere Fehlermeldungen fuer fails-> weniger infos preisgeben
-		fmt.Println(errors.Wrap(err, 1))
-		return
-	}
-	err = validate.Var(courseInfos.Apikey, "required")
-	if err != nil {
-		a := new(struct{ Apikey string })
-		a.Apikey = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
-		return
-	}
-	err = validate.Var(courseInfos.Date, "required")
-	if err != nil {
-		a := new(struct{ Date string })
-		a.Date = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
+		badRequest(response, err)
 		return
 	}
 
 	usr, err := models.InstructorByAPIKey(db, courseInfos.Apikey)
 	if err != nil {
-		a := new(struct{ Apikey string })
-		a.Apikey = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
+		// a := new(struct{ Apikey string })
+		// a.Apikey = err.Error()
+		// jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Send()
+		// fmt.Println(errors.Wrap(err, 1))
+		badRequest(response, err)
 		return
 	}
 	course := new(models.Course)
@@ -265,7 +254,7 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 	course.InstructorID = usr.ID
 	course.Date, err = time.Parse("2006-01-02 15:04:05", courseInfos.Date)
 	if err != nil {
-		serverError(response, err)
+		badRequest(response, err)
 		return
 	}
 	err = course.Save(db)
@@ -273,64 +262,56 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 		serverError(response, err)
 		return
 	}
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Send()
-
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Send()
 }
 
 func (u *ParticipantResource) listCourses(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-
 	if *noproxy {
 		setHeaders(response)
 	}
+
 	a := new(struct{ Apikey string })
 	err := request.ReadEntity(&a)
 	if err != nil {
-		a.Apikey = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
+		serverError(response, err)
 		return
 	}
 
 	_, err = models.InstructorByAPIKey(db, a.Apikey)
 	if err != nil {
-		a := new(struct{ Apikey string })
-		a.Apikey = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message(http.StatusText(http.StatusUnauthorized)).Send()
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
+
 	courses, err := models.ListCourses(db)
 	if err != nil {
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-		fmt.Println(errors.Wrap(err, 1))
+		serverError(response, err)
 		return
 	}
 	for _, c := range courses {
 		cps, err := models.CourseparticipantsByCourseid(db, c.ID)
 		if err != nil {
-			jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-			fmt.Println(errors.Wrap(err, 1))
+			serverError(response, err)
 			return
 		}
 		for _, cp := range cps {
 			part, err := cp.Participant(db)
 			if err != nil {
-				jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-				fmt.Println(errors.Wrap(err, 1))
+				serverError(response, err)
 				return
 			}
 			c.Participants = append(c.Participants, *part)
 		}
 	}
 
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(courses).Send()
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(courses).Send()
 }
 
 // POST http://localhost:8080/participant
 func (u *ParticipantResource) loginParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-
 	if *noproxy {
 		setHeaders(response)
 	}
@@ -340,7 +321,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		serverError(response, err)
 		return
 	}
-	err = validate.Var(p.Name, "required")
+	/*err = validate.Var(p.Name, "required")
 	if err != nil {
 		a := new(struct{ Name string })
 		a.Name = err.Error()
@@ -357,27 +338,28 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
-
+	*/
 	pwd := p.Password
 
 	p, err = models.ParticipantByName(db, p.Name)
 	if err != nil {
-		a := new(struct{ Name string })
-		a.Name = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		// a := new(struct{ Name string })
+		// a.Name = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusBadRequest).Message(http.StatusText(http.StatusBadRequest)).Send()
+		fmt.Println(errors.Wrap(err, 0).ErrorStack())
 		return
 	}
 
 	err = validate.Var(p.Password, fmt.Sprintf("eq=%s", pwd))
 	if err != nil {
-		a := new(struct{ Password string })
-		a.Password = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
+		// a := new(struct{ Password string })
+		// a.Password = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message(http.StatusText(http.StatusUnauthorized)).Send()
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(p).Send()
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(p).Send()
 }
 
 // POST http://localhost:8080/instructor
@@ -393,46 +375,45 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 		serverError(response, err)
 		return
 	}
-	err = validate.Var(usr.Name, "required")
-	if err != nil {
-		a := new(struct{ Name string })
-		a.Name = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
-		return
-	}
-
-	err = validate.Var(usr.Password, "required")
-	if err != nil {
-		a := new(struct{ Password string })
-		a.Password = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
-		return
-	}
+	// err = validate.Var(usr.Name, "required")
+	// if err != nil {
+	// 	a := new(struct{ Name string })
+	// 	a.Name = err.Error()
+	// 	jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+	// 	fmt.Println(errors.Wrap(err, 1))
+	// 	return
+	// }
+	//
+	// err = validate.Var(usr.Password, "required")
+	// if err != nil {
+	// 	a := new(struct{ Password string })
+	// 	a.Password = err.Error()
+	// 	jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+	// 	fmt.Println(errors.Wrap(err, 1))
+	// 	return
+	// }
 
 	pwd := usr.Password
 
 	usr, err = models.InstructorByName(db, usr.Name)
 	if err != nil {
-		a := new(struct{ Name string })
-		a.Name = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
-		fmt.Println(errors.Wrap(err, 1))
+		// a := new(struct{ Name string })
+		// a.Name = err.Error()
+		badRequest(response, err)
 		return
 	}
 
 	err = validate.Var(usr.Password, fmt.Sprintf("eq=%s", pwd))
 	if err != nil {
-		a := new(struct{ Password string })
-		a.Password = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
+		// a := new(struct{ Password string })
+		// a.Password = err.Error()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message(http.StatusText(http.StatusUnauthorized)).Send()
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	a := new(struct{ APIKey string })
 	a.APIKey = usr.Apikey
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(a).Send()
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(a).Send()
 }
 
 // GET http://localhost:8080/participants/1
@@ -448,19 +429,13 @@ func (u ParticipantResource) findParticipant(request *restful.Request, response 
 		return
 	}
 	usr, err := models.ParticipantByID(db, id)
-	if usr == nil {
-		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusNotFound, "404: Participant could not be found.") //TODO ??
-		if err != nil {
-			fmt.Println(errors.Wrap(err, 1)) //TODO ??
-		}
-		return
-	}
-	err = response.WriteEntity(usr)
 	if err != nil {
-		serverError(response, err)
+		badRequest(response, err)
 		return
 	}
+
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(usr).Send()
+
 }
 
 // POST http://localhost:8080/participants
