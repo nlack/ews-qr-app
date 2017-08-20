@@ -19,8 +19,8 @@ change databasename
 change 'newuser' and 'password'
 `CREATE USER 'newuser'@'localhost' IDENTIFIED BY 'password';`
 #### Give permissions to user
-change 'newuser' and
-`GRANT ALL PRIVILEGES ON dbname.* TO 'newuser'@'localhost';`
+change 'DBName', 'user' and 'user_password'
+`GRANT ALL PRIVILEGES ON DBName.* to 'user'@'%' identified by 'user_password';`
 #### Reload privileges
 `FLUSH PRIVILEGES;`
 
