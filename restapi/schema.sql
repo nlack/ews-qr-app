@@ -73,7 +73,6 @@ LOCK TABLES `instructor` WRITE;
 
 INSERT INTO `instructor` (`id`, `name`, `password`, `firstname`, `lastname`, `apikey`)
 VALUES
-<<<<<<< Updated upstream
 (1,'Klaus','klaus12345','Klaus','Kleber','M7hfjphd3abDUwxwxt8r4gO5q'),
 (2,'Peter','peter12345','Peter','Scheber','rtGI6Cfvhdr1F05yVIHF0wOAA'),
 (3,'Lennart','lennart1345','Lennart','Sweger','IefdrM5kMmpbSONLYX7Vr6ksz'),
