@@ -162,7 +162,7 @@ func setHeaders(response *restful.Response) {
 }
 
 func serverError(response *restful.Response, err error) {
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message("Internal Server Error").Send()
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(http.StatusText(http.StatusInternalServerError)).Send()
 	fmt.Println(errors.Wrap(err, 0).ErrorStack())
 }
 
@@ -280,7 +280,7 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 
 	_, err = models.InstructorByAPIKey(db, a.Apikey)
 	if err != nil {
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Send()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message(http.StatusText(http.StatusUnauthorized)).Send()
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
@@ -354,7 +354,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 	if err != nil {
 		// a := new(struct{ Password string })
 		// a.Password = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message("Unauthorized").Send()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message(http.StatusText(http.StatusUnauthorized)).Send()
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
@@ -407,7 +407,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 	if err != nil {
 		// a := new(struct{ Password string })
 		// a.Password = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message("Unauthorized").Send()
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Message(http.StatusText(http.StatusUnauthorized)).Send()
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
