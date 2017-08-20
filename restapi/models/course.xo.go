@@ -11,11 +11,11 @@ import (
 
 // Course represents a row from 'testtt.course'.
 type Course struct {
-	ID           int       `json:"id"`            // id
-	Name         string    `json:"name"`          // name
-	Date         time.Time `json:"date"`          // date
-	Participants string    `json:"participants"`  // participants
-	InstructorID int       `json:"instructor_id"` // instructor_id
+	ID           int           `json:"id"`            // id
+	Name         string        `json:"name"`          // name
+	Participants []Participant `json:"participants"`  // name
+	Date         time.Time     `json:"date"`          // date
+	InstructorID int           `json:"instructor_id"` // instructor_id
 
 	// xo fields
 	_exists, _deleted bool
@@ -42,14 +42,14 @@ func (c *Course) Insert(db XODB) error {
 
 	// sql insert query, primary key provided by autoincrement
 	var sqlstr = `INSERT INTO ` + os.Getenv("DBName") + `.course (` +
-		`name, date, participants, instructor_id` +
+		`name, date, instructor_id` +
 		`) VALUES (` +
-		`?, ?, ?, ?` +
+		`?, ?, ?` +
 		`)`
 
 	// run query
-	XOLog(sqlstr, c.Name, c.Date, c.Participants, c.InstructorID)
-	res, err := db.Exec(sqlstr, c.Name, c.Date, c.Participants, c.InstructorID)
+	XOLog(sqlstr, c.Name, c.Date, c.InstructorID)
+	res, err := db.Exec(sqlstr, c.Name, c.Date, c.InstructorID)
 	if err != nil {
 		return err
 	}
@@ -83,12 +83,12 @@ func (c *Course) Update(db XODB) error {
 
 	// sql query
 	var sqlstr = `UPDATE ` + os.Getenv("DBName") + `.course SET ` +
-		`name = ?, date = ?, participants = ?, instructor_id = ?` +
+		`name = ?, date = ?, instructor_id = ?` +
 		` WHERE id = ?`
 
 	// run query
-	XOLog(sqlstr, c.Name, c.Date, c.Participants, c.InstructorID, c.ID)
-	_, err = db.Exec(sqlstr, c.Name, c.Date, c.Participants, c.InstructorID, c.ID)
+	XOLog(sqlstr, c.Name, c.Date, c.InstructorID, c.ID)
+	_, err = db.Exec(sqlstr, c.Name, c.Date, c.InstructorID, c.ID)
 	return err
 }
 
@@ -146,7 +146,7 @@ func CourseByID(db XODB, id int) (*Course, error) {
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, date, participants, instructor_id ` +
+		`id, name, date, instructor_id ` +
 		`FROM ` + os.Getenv("DBName") + `.course ` +
 		`WHERE id = ?`
 
@@ -156,7 +156,7 @@ func CourseByID(db XODB, id int) (*Course, error) {
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, id).Scan(&c.ID, &c.Name, &c.Date, &c.Participants, &c.InstructorID)
+	err = db.QueryRow(sqlstr, id).Scan(&c.ID, &c.Name, &c.Date, &c.InstructorID)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func CoursesByInstructorID(db XODB, instructorID int) ([]*Course, error) {
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, date, participants, instructor_id ` +
+		`id, name, date, instructor_id ` +
 		`FROM ` + os.Getenv("DBName") + `.course ` +
 		`WHERE instructor_id = ?`
 
@@ -192,7 +192,7 @@ func CoursesByInstructorID(db XODB, instructorID int) ([]*Course, error) {
 		}
 
 		// scan
-		err = q.Scan(&c.ID, &c.Name, &c.Date, &c.Participants, &c.InstructorID)
+		err = q.Scan(&c.ID, &c.Name, &c.Date, &c.InstructorID)
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +211,7 @@ func ListCourses(db XODB) ([]*Course, error) {
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, date, participants, instructor_id ` +
+		`id, name, date, instructor_id ` +
 		`FROM ` + os.Getenv("DBName") + `.course `
 
 	// run query
@@ -230,7 +230,7 @@ func ListCourses(db XODB) ([]*Course, error) {
 		}
 
 		// scan
-		err = q.Scan(&c.ID, &c.Name, &c.Date, &c.Participants, &c.InstructorID)
+		err = q.Scan(&c.ID, &c.Name, &c.Date, &c.InstructorID)
 		if err != nil {
 			return nil, err
 		}

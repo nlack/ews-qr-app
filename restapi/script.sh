@@ -30,7 +30,7 @@ case "$(uname -s)" in
      go get github.com/joho/godotenv
      cd $GOPATH/src/github.com/nlack/ews-qr-app/restapi
      mv .env-sample .env
-     go run api.go #TODO build?
+     go run api.go -noproxy
 
      ;;
 
@@ -50,7 +50,8 @@ case "$(uname -s)" in
     go get github.com/emicklei/go-restful
     go get github.com/emicklei/go-restful-swagger12
     go get github.com/joho/godotenv
-    go run api.go #TODO build?
+    go get github.com/go-errors/errors
+    go run api.go -noproxy
 
      ;;
 

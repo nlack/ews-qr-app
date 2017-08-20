@@ -11,13 +11,13 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/emicklei/go-restful"
+	"github.com/emicklei/go-restful-swagger12"
 	"github.com/gamegos/jsend"
+	"github.com/go-errors/errors"
 	"github.com/go-playground/validator"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-
-	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful-swagger12"
 	"github.com/knq/dburl"
 	"github.com/nlack/ews-qr-app/restapi/models"
 )
@@ -57,8 +57,7 @@ var db *sql.DB
 var validate *validator.Validate
 var noproxy = flag.Bool("noproxy", false, "no proxy")
 
-type ParticipantResource struct {
-	// normally one would use DAO (data access object)
+type ParticipantResource struct { //TODO ??
 	participant models.Participant
 }
 
@@ -68,7 +67,7 @@ func (u ParticipantResource) Register(container *restful.Container) {
 	var err error
 	db, err = dburl.Open("mysql://" + os.Getenv("DBUser") + ":" + os.Getenv("DBPassword") + "@" + os.Getenv("DBHost") + "/" + os.Getenv("DBName") + "?parseTime=true&sql_mode=ansi")
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 	}
 	models.XOLog = func(s string, p ...interface{}) {
 		fmt.Printf("-------------------------------------\nQUERY: %s\n  VAL: %v\n", s, p)
@@ -101,11 +100,17 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		Returns(409, "duplicate participant-id", nil).
 		Reads(models.Participant{})) // from the request
 
-	ws.Route(ws.POST("/participant/add").To(u.createParticipant). //TODO
+	ws.Route(ws.POST("/participant/add").To(u.createParticipant).
 		// docs
 		Doc("create a participant").
 		Operation("createParticipant").
 		Reads(models.Participant{})) // from the request
+
+	ws.Route(ws.POST("/instructor/add").To(u.createInstructor).
+		// docs
+		Doc("create a instructor").
+		Operation("createInstructor").
+		Reads(models.Instructor{})) // from the request
 
 	ws.Route(ws.DELETE("/participants/{participant-id}").To(u.removeParticipant).
 		// docs
@@ -134,8 +139,13 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		Doc("add course").
 		Operation("addCourse").
 		Reads(models.Instructor{})) // from the request
-	//TODO READS??
 
+	ws.Route(ws.PUT("/course/{course-id}").To(u.addParticipant).
+		// docs
+		Doc("add participant to course").
+		Operation("addParticipant").
+		Reads(models.Participant{})) // from the request
+	//TODO reads?
 	ws.Route(ws.POST("/courses").To(u.listCourses).
 		// docs
 		Doc("list courses").
@@ -149,6 +159,54 @@ func setHeaders(response *restful.Response) {
 	response.AddHeader("Access-Control-Allow-Credentials", "true")
 	response.AddHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
 	response.AddHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers")
+}
+
+func serverError(response *restful.Response, err error) {
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message("Internal Server Error").Send()
+	fmt.Println(errors.Wrap(err, 1))
+}
+
+func (u *ParticipantResource) addParticipant(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
+	a := new(struct {
+		Apikey string
+		Qrhash string
+	})
+
+	var err error
+	err = request.ReadEntity(&a)
+	if err != nil {
+		serverError(response, err)
+		return
+	}
+	fmt.Println("apikey" + a.Apikey)
+	_, err = models.InstructorByAPIKey(db, a.Apikey)
+	if err != nil {
+		panic(err)
+
+		//TODO not authorized
+	}
+
+	coursePart := new(models.Courseparticipant)
+
+	part, err := models.ParticipantByQrhash(db, a.Qrhash)
+	if err != nil {
+		panic(err)
+	}
+	coursePart.Courseid, err = strconv.Atoi(request.PathParameter("course-id"))
+	if err != nil {
+		panic(err)
+	}
+	coursePart.Participantid = part.ID
+	err = coursePart.Save(db)
+	if err != nil {
+		panic(err)
+	}
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Send()
+
 }
 
 func (u *ParticipantResource) addCourse(request *restful.Request, response *restful.Response) {
@@ -165,8 +223,7 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 	})
 	err := request.ReadEntity(&courseInfos)
 	if err != nil {
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-		log.Fatal(err.Error())
+		serverError(response, err)
 		return
 	}
 
@@ -174,7 +231,8 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 	if err != nil {
 		a := new(struct{ Name string })
 		a.Name = err.Error()
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send() //TODO bessere Fehlermeldungen
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send() //TODO bessere Fehlermeldungen fuer fails-> weniger infos preisgeben
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	err = validate.Var(courseInfos.Apikey, "required")
@@ -182,6 +240,7 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 		a := new(struct{ Apikey string })
 		a.Apikey = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	err = validate.Var(courseInfos.Date, "required")
@@ -189,6 +248,7 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 		a := new(struct{ Date string })
 		a.Date = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -197,6 +257,7 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 		a := new(struct{ Apikey string })
 		a.Apikey = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	course := new(models.Course)
@@ -204,11 +265,15 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 	course.InstructorID = usr.ID
 	course.Date, err = time.Parse("2006-01-02 15:04:05", courseInfos.Date)
 	if err != nil {
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-		log.Fatal(err.Error())
+		serverError(response, err)
 		return
 	}
-	course.Save(db)
+	err = course.Save(db)
+	if err != nil {
+		serverError(response, err)
+		return
+	}
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Send()
 
 }
 
@@ -223,6 +288,7 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 	if err != nil {
 		a.Apikey = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -231,16 +297,34 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 		a := new(struct{ Apikey string })
 		a.Apikey = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	courses, err := models.ListCourses(db)
 	if err != nil {
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-		log.Fatal(err.Error())
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(courses).Send()
+	for _, c := range courses {
+		cps, err := models.CourseparticipantsByCourseid(db, c.ID)
+		if err != nil {
+			jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+			fmt.Println(errors.Wrap(err, 1))
+			return
+		}
+		for _, cp := range cps {
+			part, err := cp.Participant(db)
+			if err != nil {
+				jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
+				fmt.Println(errors.Wrap(err, 1))
+				return
+			}
+			c.Participants = append(c.Participants, *part)
+		}
+	}
 
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(courses).Send()
 }
 
 // POST http://localhost:8080/participant
@@ -253,8 +337,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 	p := new(models.Participant)
 	err := request.ReadEntity(&p)
 	if err != nil {
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-		log.Fatal(err.Error())
+		serverError(response, err)
 		return
 	}
 	err = validate.Var(p.Name, "required")
@@ -262,6 +345,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		a := new(struct{ Name string })
 		a.Name = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -270,6 +354,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		a := new(struct{ Password string })
 		a.Password = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -288,6 +373,7 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		a := new(struct{ Password string })
 		a.Password = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -304,8 +390,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 	usr := new(models.Instructor)
 	err := request.ReadEntity(&usr)
 	if err != nil {
-		jsend.Wrap(response.ResponseWriter).Status(http.StatusInternalServerError).Message(err.Error()).Send()
-		log.Fatal(err.Error())
+		serverError(response, err)
 		return
 	}
 	err = validate.Var(usr.Name, "required")
@@ -313,6 +398,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 		a := new(struct{ Name string })
 		a.Name = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -321,6 +407,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 		a := new(struct{ Password string })
 		a.Password = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusExpectationFailed).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -331,6 +418,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 		a := new(struct{ Name string })
 		a.Name = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusNotFound).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 
@@ -339,9 +427,9 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 		a := new(struct{ Password string })
 		a.Password = err.Error()
 		jsend.Wrap(response.ResponseWriter).Status(http.StatusUnauthorized).Data(a).Send()
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
-	//TODO create apikey
 	a := new(struct{ APIKey string })
 	a.APIKey = usr.Apikey
 	jsend.Wrap(response.ResponseWriter).Status(http.StatusAccepted).Data(a).Send()
@@ -356,25 +444,30 @@ func (u ParticipantResource) findParticipant(request *restful.Request, response 
 	}
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
-		fmt.Println(err)
+		serverError(response, err)
+		return
 	}
 	usr, err := models.ParticipantByID(db, id)
 	if usr == nil {
 		response.AddHeader("Content-Type", "text/plain")
-		response.WriteErrorString(http.StatusNotFound, "404: Participant could not be found.")
+		response.WriteErrorString(http.StatusNotFound, "404: Participant could not be found.") //TODO ??
 		if err != nil {
-			fmt.Println(err)
+			fmt.Println(errors.Wrap(err, 1)) //TODO ??
 		}
 		return
 	}
-	response.WriteEntity(usr)
+	err = response.WriteEntity(usr)
+	if err != nil {
+		serverError(response, err)
+		return
+	}
 }
 
 // POST http://localhost:8080/participants
 // <Participant><Name>Melissa</Name></Participant>
 //
 func (u *ParticipantResource) createParticipant(request *restful.Request, response *restful.Response) {
-	response.AddHeader("Content-Type", "application/json")
+	response.AddHeader("Content-Type", "application/json") //TODO die headers prüfen
 	if *noproxy {
 		setHeaders(response)
 	}
@@ -383,7 +476,7 @@ func (u *ParticipantResource) createParticipant(request *restful.Request, respon
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	usr.Qrhash = randomString(25)
@@ -391,21 +484,60 @@ func (u *ParticipantResource) createParticipant(request *restful.Request, respon
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		fmt.Println(err.Error())
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	err = usr.Save(db)
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	//usr.Id = strconv.Itoa(len(u.participants) + 1) // simple id generation
 	//u.participants[usr.Id] = *usr
 	err = response.WriteHeaderAndEntity(http.StatusCreated, usr)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
+	}
+}
+
+// POST http://localhost:8080/participants
+// <Participant><Name>Melissa</Name></Participant>
+//
+func (u *ParticipantResource) createInstructor(request *restful.Request, response *restful.Response) {
+	response.AddHeader("Content-Type", "application/json")
+	if *noproxy {
+		setHeaders(response)
+	}
+	usr := new(models.Instructor)
+	err := request.ReadEntity(&usr)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(errors.Wrap(err, 1))
+		return
+	}
+	usr.Apikey = randomString(25)
+	err = validate.Struct(*usr)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(errors.Wrap(err, 1))
+		return
+	}
+	err = usr.Save(db)
+	if err != nil {
+		response.AddHeader("Content-Type", "text/plain")
+		response.WriteErrorString(http.StatusInternalServerError, err.Error())
+		fmt.Println(errors.Wrap(err, 1))
+		return
+	}
+	//usr.Id = strconv.Itoa(len(u.participants) + 1) // simple id generation
+	//u.participants[usr.Id] = *usr
+	err = response.WriteHeaderAndEntity(http.StatusCreated, usr)
+	if err != nil {
+		fmt.Println(errors.Wrap(err, 1))
 	}
 }
 
@@ -419,17 +551,17 @@ func (u *ParticipantResource) updateParticipant(request *restful.Request, respon
 	}
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 	}
 	usr, err := models.ParticipantByID(db, id)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 	}
 	err = request.ReadEntity(&usr)
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	usr.ID = id
@@ -437,7 +569,7 @@ func (u *ParticipantResource) updateParticipant(request *restful.Request, respon
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 	response.WriteEntity(usr)
@@ -452,17 +584,17 @@ func (u *ParticipantResource) removeParticipant(request *restful.Request, respon
 	}
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 	}
 	usr, err := models.ParticipantByID(db, id)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 	}
 	err = usr.Delete(db)
 	if err != nil {
 		response.AddHeader("Content-Type", "text/plain")
 		response.WriteErrorString(http.StatusInternalServerError, err.Error())
-		fmt.Println(err)
+		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
 }
@@ -471,7 +603,7 @@ func main() {
 	flag.Parse()
 	err := godotenv.Load()
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		fmt.Println(errors.Wrap(err, 1))
 	}
 	// to see what happens in the package, uncomment the following
 	//restful.TraceLogger(log.New(os.Stdout, "[restful] ", log.LstdFlags|log.Lshortfile))

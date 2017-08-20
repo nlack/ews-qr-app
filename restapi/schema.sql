@@ -22,19 +22,14 @@
 
 # Export von Tabelle course
 # ------------------------------------------------------------
-<<<<<<< Updated upstream
-use ewsdb
-=======
-USE ews;
 
->>>>>>> Stashed changes
+USE ewsdb;
 DROP TABLE IF EXISTS `course`;
 
 CREATE TABLE `course` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
   `date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `participants` varchar(255) NOT NULL,
   `instructor_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   KEY `instructor_id` (`instructor_id`),
@@ -44,12 +39,12 @@ CREATE TABLE `course` (
 LOCK TABLES `course` WRITE;
 /*!40000 ALTER TABLE `course` DISABLE KEYS */;
 
-INSERT INTO `course` (`id`, `name`, `date`, `participants`, `instructor_id`)
+INSERT INTO `course` (`id`, `name`, `date`, `instructor_id`)
 VALUES
-	(1,'schwimmen','2017-08-07 16:42:03','alle',1),
-	(2,'kochen','2017-08-07 16:42:03','',1),
-	(3,'kochen','2017-08-07 16:42:03','',1),
-	(4,'kochen','2017-08-07 16:42:03','',1);
+	(1,'schwimmen','2017-08-07 16:42:03',1),
+	(2,'kochen','2017-08-07 16:42:03',1),
+	(3,'kochen','2017-08-07 16:42:03',1),
+	(4,'kochen','2017-08-07 16:42:03',1);
 
 /*!40000 ALTER TABLE `course` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -68,7 +63,8 @@ CREATE TABLE `instructor` (
   `lastname` varchar(255) NOT NULL,
   `apikey` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `apikey` (`apikey`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 LOCK TABLES `instructor` WRITE;
@@ -76,16 +72,16 @@ LOCK TABLES `instructor` WRITE;
 
 INSERT INTO `instructor` (`id`, `name`, `password`, `firstname`, `lastname`, `apikey`)
 VALUES
-	(1,'Klaus','klaus12345','Klaus','Kleber','0m3945c4987ap9mc78tr5c'),
-	(2,'Peter','peter12345','Peter','Scheber','uc87943j75c98ev798scd'),
-	(3,'Lennart','lennart1345','Lennart','Sweger','09384732840932c837c09er'),
-	(4,'Adele','adele12345','Adele','Anika','c485094m385c098m4309v5m3'),
-	(5,'Angelina','angelina12345','Angelina','Bertold','ipmci8509m3294oiewurcoinewr'),
-	(6,'Anne','anne12345','Anne','Gros','u32n4932nu4cu324coewuoir'),
-	(7,'Madlen','madlen12345','Madlen','Knecht','9u45c8329mcueoircsadvct5ezbr6ezb45'),
-	(8,'Maja','maja12345','Maja','Blub','irc0ß8m23m098rc9es8urcoiesmrcoe'),
-	(9,'Maxin','maxin12345','Maxin','Thor','urc3m4cpoicewpoircpowqimecwq'),
-	(10,'Tia','tia12345','Tia','Rubble','omu32pppppesapoufcoineuru932842');
+(1,'Klaus','klaus12345','Klaus','Kleber','M7hfjphd3abDUwxwxt8r4gO5q'),
+(2,'Peter','peter12345','Peter','Scheber','rtGI6Cfvhdr1F05yVIHF0wOAA'),
+(3,'Lennart','lennart1345','Lennart','Sweger','IefdrM5kMmpbSONLYX7Vr6ksz'),
+(4,'Adele','adele12345','Adele','Anika','cJezmSKnGao6wv06Rh6beNXdl'),
+(5,'Angelina','angelina12345','Angelina','Bertold','0D5BIR7uI9cjVC2aHjjgVDelj'),
+(6,'Anne','anne12345','Anne','Gros','0NKNdUKxXgGAVj9hv6ZdgA9Oe'),
+(7,'Madlen','madlen12345','Madlen','Knecht','HG3pZddhWqNUO8AyV2BEvI3SM'),
+(8,'Maja','maja12345','Maja','Blub','rVWAK3k0Eh2XzdcJjV4HZeEoy'),
+(9,'Maxin','maxin12345','Maxin','Thor','1jfOPrwiSeeVUypCTS9psPDzk'),
+(10,'Tia','tia12345','Tia','Rubble','mclJxwLzIsnN5O61PeSbU5j1b');
 
 /*!40000 ALTER TABLE `instructor` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -104,7 +100,8 @@ CREATE TABLE `participant` (
   `lastname` varchar(255) NOT NULL,
   `qrhash` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`)
+  UNIQUE KEY `name` (`name`),
+  UNIQUE KEY `qrhash` (`qrhash`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 LOCK TABLES `participant` WRITE;
@@ -112,30 +109,67 @@ LOCK TABLES `participant` WRITE;
 
 INSERT INTO `participant` (`id`, `name`, `password`, `firstname`, `lastname`, `qrhash`)
 VALUES
-	(1,'Ulla','ulla123','Ulla','Urte','56vf4uv5u57u'),
-	(2,'Ulrike','ulrike123','Ulrike','Grub','w324gtrcrc43324c245cx43q5'),
-	(3,'Undine','undine123','Undine','Grub','mrcointcmtoirezufcp9qw4'),
-	(4,'Ursula','ursula123','Ursila','Grub','ucr09m4309rcureciu'),
-	(5,'Urte','urte123','Urte','Grub','uc3qufooimearutco'),
-	(6,'Uschi','uschi123','Uschi','Grub','uemrc0943urcewoircuewoir'),
-	(7,'Uta','uta123','Uta','Grub','u09mce0fewmfcoiwr'),
-	(8,'Ute','ute123','Ute','Grub','mu2390u4c093wurcoieurc'),
-	(9,'Ida','ida123','Ida','Grub','pm4394u09c0ru3209mc'),
-	(10,'Ina','ina123','Ina','Grub','iu5coim43uoicr'),
-	(11,'Isa','isa123','Isa','Grub','um532mu04c9u3rcuew'),
-	(12,'Irene','irene123','Irene','Grub','c39m204c328u4c9oimruoic'),
-	(13,'Isis','isis123','Isis','Grub','ficpomrwirc090mc28m9328rmuewoirc'),
-	(14,'Ivana','ibana123','Ivana','Grub','ucromoimrrsac45ze5t'),
-	(15,'Irem','irem123','Irem','Grub','wceoiomrowu093284n834cuewifomf'),
-	(16,'Inka','inka123','Inka','Grub','rciuo23uc09u32cnourcor'),
-	(17,'Insa','insa123','Insa','Grub','uc309ru432rcueruc982u3cm92'),
-	(18,'Hanna','hanna123','Hanna','Grub','nu44444444444444cwurp23qmx3zro'),
-	(19,'Hellen','hellen123','Hellen','Grub','aisoie7wtrc984wcmasxccsefeta'),
-	(20,'Helga','helga123','Helga','Grub','asoicpmtccccwafc98ewp'),
-	(99,'Hege','hege123','Hege','Grub','hewkjcslrhmfcshflicore587c09438r509m328c');
+(1,'Ulla','ulla123','Ulla','Urte','SskVvFqGlDYy2vBSxF8wgYyS0'),
+(2,'Ulrike','ulrike123','Ulrike','Grub','JNygMLPyAR9czjttaK9CVRIkT'),
+(3,'Undine','undine123','Undine','Grub','L35td3HR7JsJPNiOY73MAM45T'),
+(4,'Ursula','ursula123','Ursila','Grub','asENjnjr07c4TWItbnUlsgvSb'),
+(5,'Urte','urte123','Urte','Grub','61XbC6LQXRBHDuD2gNdrVm3je'),
+(6,'Uschi','uschi123','Uschi','Grub','vrcpZJTMb4Tc7d7thEpMEVVIg'),
+(7,'Uta','uta123','Uta','Grub','vY6Bxxbb2hUzuiTCRJZy9kRkH'),
+(8,'Ute','ute123','Ute','Grub','5o9Sype4b57aSlLmAFNuz5Y4K'),
+(9,'Ida','ida123','Ida','Grub','cCizrGhMLVrXqik4ZfqH9th9L'),
+(10,'Ina','ina123','Ina','Grub','p88minmGz7RJYlAgTvNw9qtNf'),
+(11,'Isa','isa123','Isa','Grub','I2KW6SVWEWVpMaTTTIhbKwccP'),
+(12,'Irene','irene123','Irene','Grub','0kDd2FF8XGqZFK0guWosIlVog'),
+(13,'Isis','isis123','Isis','Grub','SR4g0MkagU6L7HkYDL1kiQMmW'),
+(14,'Ivana','ibana123','Ivana','Grub','kL2n07EK0B6liVLwfxgDpRGNF'),
+(15,'Irem','irem123','Irem','Grub','VsMA37DQ1H3vtSXBUCmK2YRAr'),
+(16,'Inka','inka123','Inka','Grub','3Oziv0SaC0oNrQl3VSnTaZfFn'),
+(17,'Insa','insa123','Insa','Grub','pmg9ZIvKxo3res0XJQcqEY8lL'),
+(18,'Hanna','hanna123','Hanna','Grub','uHiUAwEnIgsq7Yw4u2XvPgSa2'),
+(19,'Hellen','hellen123','Hellen','Grub','TITzRMrGQC0BHtlwGbO6HsnOw');
 
 /*!40000 ALTER TABLE `participant` ENABLE KEYS */;
 UNLOCK TABLES;
+
+DROP TABLE IF EXISTS `courseparticipant`;
+
+CREATE TABLE `courseparticipant` (
+  `courseid` int(11) NOT NULL,
+  `participantid` int(11) NOT NULL,
+  KEY `courseid` (`courseid`),
+  KEY `participantid` (`participantid`),
+  CONSTRAINT `courseid` FOREIGN KEY (`courseid`) REFERENCES `course` (`id`),
+  CONSTRAINT `participantid` FOREIGN KEY (`participantid`) REFERENCES `participant` (`id`),
+  CONSTRAINT pk_courseparticipant PRIMARY KEY (`courseid`,`participantid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+LOCK TABLES `courseparticipant` WRITE, `participant` WRITE;
+
+/*!40000 ALTER TABLE `participant` DISABLE KEYS */;
+
+INSERT INTO `courseparticipant` (`courseid`, `participantid`)
+VALUES
+	(1,1),
+  (1,2),
+  (1,3),
+  (2,4),
+  (2,5),
+  (2,6),
+  (2,7),
+  (2,8),
+  (3,9),
+  (3,10),
+  (3,11),
+  (3,12),
+  (3,15),
+  (4,16),
+  (4,17),
+  (4,18);
+
+  /*!40000 ALTER TABLE `participant` ENABLE KEYS */;
+UNLOCK TABLES;
+
 
 
 

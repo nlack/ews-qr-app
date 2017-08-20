@@ -205,3 +205,29 @@ func ParticipantByID(db XODB, id int) (*Participant, error) {
 
 	return &p, nil
 }
+
+// ParticipantByQrhash retrieves a row from 'ewsdb.participant' as a Participant.
+//
+// Generated from index 'qrhash'.
+func ParticipantByQrhash(db XODB, qrhash string) (*Participant, error) {
+	var err error
+
+	// sql query
+	var sqlstr = `SELECT ` +
+		`id, name, password, firstname, lastname, qrhash ` +
+		`FROM ` + os.Getenv("DBName") + `.participant ` +
+		`WHERE qrhash = ?`
+
+	// run query
+	XOLog(sqlstr, qrhash)
+	p := Participant{
+		_exists: true,
+	}
+
+	err = db.QueryRow(sqlstr, qrhash).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
+}
