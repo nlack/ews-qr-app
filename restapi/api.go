@@ -298,11 +298,21 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 		}
 		for _, cp := range cps {
 			part, err := cp.Participant(db)
+			a := new(struct {
+				Name      string
+				Firstname string
+				Lastname  string
+				Qrhash    string
+			})
+			a.Name = part.Name
+			a.Firstname = part.Firstname
+			a.Lastname = part.Lastname
+			a.Qrhash = part.Qrhash
 			if err != nil {
 				serverError(response, err)
 				return
 			}
-			c.Participants = append(c.Participants, *part)
+			c.Participants = append(c.Participants, *a)
 		}
 	}
 
@@ -433,6 +443,7 @@ func (u ParticipantResource) findParticipant(request *restful.Request, response 
 		badRequest(response, err)
 		return
 	}
+	usr.Password = ""
 
 	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(usr).Send()
 

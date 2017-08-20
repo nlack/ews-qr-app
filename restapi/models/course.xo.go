@@ -13,7 +13,7 @@ import (
 type Course struct {
 	ID           int           `json:"id"`            // id
 	Name         string        `json:"name"`          // name
-	Participants []Participant `json:"participants"`  // name
+	Participants []interface{} `json:"participants"`  // name
 	Date         time.Time     `json:"date"`          // date
 	InstructorID int           `json:"instructor_id"` // instructor_id
 
