@@ -42,9 +42,9 @@ LOCK TABLES `course` WRITE;
 INSERT INTO `course` (`id`, `name`, `date`, `instructor_id`)
 VALUES
 	(1,'schwimmen','2017-08-07 16:42:03',1),
-	(2,'kochen','2017-08-07 16:42:03',1),
-	(3,'kochen','2017-08-07 16:42:03',1),
-	(4,'kochen','2017-08-07 16:42:03',1);
+	(2,'planschen','2017-08-07 16:42:03',1),
+	(3,'kraulen','2017-08-07 16:42:03',1),
+	(4,'tauchen','2017-08-07 16:42:03',1);
 
 /*!40000 ALTER TABLE `course` ENABLE KEYS */;
 UNLOCK TABLES;
