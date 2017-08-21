@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -56,9 +55,8 @@ func randomString(length int) string {
 
 var db *sql.DB
 var validate *validator.Validate
-var noproxy = flag.Bool("noproxy", false, "no proxy")
 
-type ParticipantResource struct { //TODO ??
+type ParticipantResource struct {
 	participant models.Participant
 }
 
@@ -146,7 +144,6 @@ func (u ParticipantResource) Register(container *restful.Container) {
 		Doc("add participant to course").
 		Operation("addParticipant").
 		Reads(models.Participant{})) // from the request
-	//TODO reads?
 	ws.Route(ws.POST("/courses").To(u.listCourses).
 		// docs
 		Doc("list courses").
@@ -174,9 +171,7 @@ func badRequest(response *restful.Response, err error) {
 
 func (u *ParticipantResource) addParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	a := new(struct {
 		Apikey string
 		Qrhash string
@@ -235,10 +230,6 @@ func (u *ParticipantResource) addParticipant(request *restful.Request, response 
 func (u *ParticipantResource) addCourse(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
 
-	if *noproxy {
-		setHeaders(response)
-	}
-
 	courseInfos := new(struct {
 		Apikey string
 		Name   string
@@ -283,9 +274,6 @@ func (u *ParticipantResource) addCourse(request *restful.Request, response *rest
 
 func (u *ParticipantResource) listCourses(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
 
 	a := new(struct{ Apikey string })
 	err := request.ReadEntity(&a)
@@ -338,10 +326,9 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 // POST http://localhost:8080/participant
 func (u *ParticipantResource) loginParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	p := new(models.Participant)
+
 	err := request.ReadEntity(&p)
 	if err != nil {
 		serverError(response, err)
@@ -385,16 +372,26 @@ func (u *ParticipantResource) loginParticipant(request *restful.Request, respons
 		return
 	}
 
-	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(p).Send()
+	part := new(struct {
+		Name      string
+		Firstname string
+		Lastname  string
+		Qrhash    string
+		Haspayed  bool
+	})
+	part.Name = p.Name
+	part.Firstname = p.Firstname
+	part.Lastname = p.Lastname
+	part.Qrhash = p.Qrhash
+	part.Haspayed = p.Haspayed
+	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Data(part).Send()
 }
 
 // POST http://localhost:8080/instructor
 //
 func (u *ParticipantResource) loginInstructor(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	usr := new(models.Instructor)
 	err := request.ReadEntity(&usr)
 	if err != nil {
@@ -446,9 +443,7 @@ func (u *ParticipantResource) loginInstructor(request *restful.Request, response
 //
 func (u ParticipantResource) findParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
 		serverError(response, err)
@@ -469,10 +464,8 @@ func (u ParticipantResource) findParticipant(request *restful.Request, response 
 // <Participant><Name>Melissa</Name></Participant>
 //
 func (u *ParticipantResource) createParticipant(request *restful.Request, response *restful.Response) {
-	response.AddHeader("Content-Type", "application/json") //TODO die headers prüfen
-	if *noproxy {
-		setHeaders(response)
-	}
+	response.AddHeader("Content-Type", "application/json")
+
 	usr := new(models.Participant)
 	err := request.ReadEntity(&usr)
 	if err != nil {
@@ -510,9 +503,7 @@ func (u *ParticipantResource) createParticipant(request *restful.Request, respon
 //
 func (u *ParticipantResource) createInstructor(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	usr := new(models.Instructor)
 	err := request.ReadEntity(&usr)
 	if err != nil {
@@ -549,9 +540,7 @@ func (u *ParticipantResource) createInstructor(request *restful.Request, respons
 //
 func (u *ParticipantResource) updateParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
 		fmt.Println(errors.Wrap(err, 1))
@@ -582,9 +571,7 @@ func (u *ParticipantResource) updateParticipant(request *restful.Request, respon
 //
 func (u *ParticipantResource) removeParticipant(request *restful.Request, response *restful.Response) {
 	response.AddHeader("Content-Type", "application/json")
-	if *noproxy {
-		setHeaders(response)
-	}
+
 	id, err := strconv.Atoi(request.PathParameter("participant-id"))
 	if err != nil {
 		fmt.Println(errors.Wrap(err, 1))
@@ -603,7 +590,6 @@ func (u *ParticipantResource) removeParticipant(request *restful.Request, respon
 }
 
 func main() {
-	flag.Parse()
 	err := godotenv.Load()
 	if err != nil {
 		fmt.Println(errors.Wrap(err, 1))

@@ -4,29 +4,31 @@
 ```
 "status": "failed | error",
 "data": {
-	"message": "Zugriff verweigert | Ungültige Anfrage | Teilnehmer darf nicht Teilnehmen"
+	"message": "Bad Request | Unauthorized | Server Error"
 }
 ```
 
 ## Routen für alle Zugänglich
 ### Teilnehmer Login Route
-`POST     /participant Participant.Login`
+`POST     /participant`
 #### REQUEST
 ```json
 {
-  "name": "TestUser1",
-  "password": "test12345#?!\"_-/"
+  "name": "Ulla",
+  "password": "ulla123"
 }
 ```
 #### RESPONSE
 ```json
 {
-    "status" : "success",
-    "data" : {
-   		"firstname": "Klaus",
-   		"lastname": "Peter",
-			"qrhash": "2039m4c8094875043mxxncowtn"
-     }
+    "data": {
+        "Name": "Ute",
+        "Firstname": "Ute",
+        "Lastname": "Grub",
+        "Qrhash": "5o9Sype4b57aSlLmAFNuz5Y4K",
+        "Haspayed": true
+    },
+    "status": "success"
 }
 ```
 
@@ -34,35 +36,35 @@
 
 ### Trainer Login Route
 
-`POST     /instructor Instructor.Login`
+`POST     /instructor`
 #### REQUEST
 ```json
 {
-  "name": "TestUser1",
-  "password": "test12345#?!\"_-/"
+  "name": "Klaus",
+  "password": "klaus12345"
 }
 ```
 #### RESPONSE
 ```json
 {
-    "status" : "success",
-    "data" : {
-        "apikey": "2039m4c8094875043mxxncowtn"
-     }
+    "data": {
+        "APIKey": "M7hfjphd3abDUwxwxt8r4gO5q"
+    },
+    "status": "success"
 }
 ```
 ## Routen nur für Kursleiter zugänglich
 ### Kurs hinzufügen
 
-`POST		/courses/add Course.Add`
+`POST		/courses/add`
 
 #### REQUEST
 
 ```json
 {
-	"apikey": "ahsdkfjsahdf234234234",
+	"apikey": "M7hfjphd3abDUwxwxt8r4gO5q",
 	"name":"kochen",
-	"date": "2017-08-07 16:42:03",
+	"date": "2017-08-07 16:42:03"
 }
 ```
 
@@ -70,58 +72,62 @@
 
 ```json
 {
-    "status" : "success",
-    "data" : {
-			"message": ""
-		}
+    "data": null,
+    "status": "success"
 }
 ```
 
  ### Kurse listen
 
-`POST		/courses						Course.List`
+`POST		/courses`
 
 #### REQUEST
 
 ```json
 {
-  "apikey": "09823094caqköldjadf"
+	"apikey":"M7hfjphd3abDUwxwxt8r4gO5q"
 }
 ```
-
-
 
 #### RESPONSE
 
 ```json
 {
-	"status": "success",
-	"data": {
-		"courses": [
-			{
-				"name": "asd",
-				"date": "2017-08-07 16:42:03",
-				"instructor-apikey": "0ßc84m5098420",
-				"participants": [
-					{
-					"vorname": "asd",
-					"nachname": "asd",
-					"geb": "12.12.2012",
-					"qr-code": "BASE64 IMAGE",
-					"qr-code-hash": "po8nm4973oc8"
-					},
-					{  }
-				]
-			},
-			{  }
-		]
-	}
+    "data": [
+        {
+            "id": 1,
+            "name": "schwimmen",
+            "participants": [
+                {
+                    "Name": "Ulla",
+                    "Firstname": "Ulla",
+                    "Lastname": "Urte",
+                    "Haspayed": true
+                },
+                {
+                    "Name": "Ulrike",
+                    "Firstname": "Ulrike",
+                    "Lastname": "Grub",
+                    "Haspayed": true
+                },
+                {
+                    "Name": "Undine",
+                    "Firstname": "Undine",
+                    "Lastname": "Grub",
+                    "Haspayed": true
+                }
+            ],
+            "date": "2017-08-07T16:42:03Z",
+            "instructor_id": 1
+        }
+    ],
+    "status": "success"
 }
 ```
 
 ### Teilnehmer zu Kurs hinzufügen
 
-`PUT		/course/:id Course.Addparticipant`
+`PUT		/course/:id`
 
 #### REQUEST
 
@@ -135,9 +141,7 @@
 #### RESPONSE
 ```json
 {
-    "status" : "success",
-    "data" : {
-			"message": ""
-		}
+    "data": null,
+    "status": "success"
 }
 ```
