@@ -55,7 +55,7 @@ GRANT ALL ON ewsdb.* TO 'ews'@'localhost';
 FLUSH PRIVILEGES;
 exit
 ```
-- Create Tables and Example-Data
+- create Tables and Example-Data
 ```
 cd $GOPATH/src/github.com/nlack/ews-qr-app/restapi
 mysql -u ews -p < schema.sql
@@ -65,5 +65,5 @@ mysql -u ews -p < schema.sql
 `cd $GOPATH/src/github.com/nlack/ews-qr-app/restapi`
 `go build api.go`  
 
-### run project
+### Run project
 `./api`
