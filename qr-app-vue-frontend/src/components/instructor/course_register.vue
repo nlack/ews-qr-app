@@ -10,7 +10,7 @@
 		  </b-collapse>
 		</b-navbar>
 		<div>
-			<video width="85%" height="50%" id="scanner"></video></br>
+			<video height="40%" id="scanner"></video></br>
 			<b-button variant="warning" v-on:click="goBack()">Zurück</b-button>
 			<b-button v-bind:disabled="scanActive" variant="primary" v-on:click="runScanner(); scanActive=true">Starte Scanner</b-button>
 		</div>
@@ -19,8 +19,6 @@
   <b-table striped hover show-empty
            :items="participants"
            :fields="fields"
-           :current-page="currentPage"
-           :per-page="perPage"
   >
     <template slot="firstname" scope="row">{{row.value}}</template>
     <template slot="lastname" scope="row">{{row.value}}</template>
@@ -58,12 +56,9 @@ export default {
 			scanActive: false,
 	    participants: participants,
 	    fields: {
-	      "firstname":     { label: 'Vorname', sortable: true },
-	      "lastname":      { label: 'Nachname', sortable: true}
+	      "Firstname":     { label: 'Vorname', sortable: true },
+	      "Lastname":      { label: 'Nachname', sortable: true}
 	    },
-	    currentPage: 1,
-	    perPage: 5,
-	    pageOptions: [{text:5,value:5},{text:10,value:10},{text:15,value:15}],
 	    modalDetails: { index:'', data:'' }
 		}
 	},
@@ -87,28 +82,53 @@ export default {
 			});
 			scanner.addListener('scan', (content) => {
 				let key = localStorage.getItem('ins_api_key');
-				let cId = localStorage.getItem('clicked_course');
+				let cId = Number(localStorage.getItem('clicked_course')) + 1;
 				axios.put( process.env.API_URL + "/course/" + cId, {
 					"apikey": key,
 					"qrhash": content
 				}, {validateStatus: function (status) {
-					return status < 500;
+					return true;
 				}})
 				.then( (response) => {
 					let resStatus = response.data.status;
 					let resMsg = response.data.message;
 
 					if (resStatus !== "success") {
-						this.$notify(resMsg, "error");
+						if (resMsg === "Participant already added") {
+							this.$notify("Teilnehmer schon hinzugefügt.", "warning");
+						} else if (resMsg === "Participant has not payed"){
+							this.$notify("Teilnehmer nicht zugelassen.", "error");
+						} else {
+							this.$notify(resMsg, "error");
+						}
 					} else {
 						this.$notify("Teilnehmer erfolgreich hinzugefügt.", "info");
+						axios.post(process.env.API_URL + '/courses', {
+							"apikey": key
+						}, {validateStatus: function (status) {
+							return true;
+						}})
+						.then((response) => {
+							let resStatus = response.data.status;
+							let resData = "";
+							if (response.data !== null) {
+								resData = response.data.data;
+							}
+							if (resStatus !== "success") {
+							} else {
+								let course_index = Number(localStorage.getItem('clicked_course'));
+								this.participants = resData[course_index].participants;
+								localStorage.setItem("courses", JSON.stringify(resData));
+							}
+						})
+						.catch((err) => {
+							console.error(err);
+						});
 					}
 				})
 				.catch( (err) => {
 					console.error(err);
 				});
-				this.$notify(content, 'success');
-				console.log("Found QR-Code Content: " + content);
 			});
 			Instascan.Camera.getCameras().then(function (cameras) {
 			  if (cameras.length > 0) {

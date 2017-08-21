@@ -76,8 +76,6 @@ export default {
 					let resStatus = response.data.status;
 					let resMsg = response.data.message;
 					if (resStatus !== "success") {
-						// ERROR STATE
-						console.log("LOGIN FAILED");
 						this.kursname = "";
 						this.date = "";
 						this.time = "";
@@ -86,13 +84,14 @@ export default {
 						let apikey = localStorage.getItem('ins_api_key');
 						axios.post(process.env.API_URL + '/courses', {
 							"apikey": apikey
-						})
+						}, {validateStatus: function (status) {
+							return true;
+						}})
 						.then((response) => {
 							let resStatus = response.data.status;
 							let resData = response.data.data;
 							if (resStatus !== "success") {
 								// ERROR STATE
-								consoe.log("GET COURSE LIST FAILED");
 							} else {
 								localStorage.setItem("courses", JSON.stringify(resData));
 								this.$notify("Erfolgreich hinzugefügt.", "success");
@@ -105,7 +104,6 @@ export default {
 					}
 				})
 				.catch( (err) => {
-					console.log("WHHHHAT")
 					console.error(err);
 				})
 			}

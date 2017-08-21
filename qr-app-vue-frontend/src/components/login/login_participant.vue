@@ -41,12 +41,15 @@ export default {
 				axios.post( process.env.API_URL + '/participant', {
 					"name": user,
 					"password": password
-				})
+				}, {validateStatus: function (status) {
+					return true;
+				}})
 				.then((response) => {
 					let resStatus = response.data.status;
 					let resData = response.data.data;
 					if (resStatus !== "success") {
 						// ERROR STATE
+						this.$notify("Login fehlgeschlagen.", "warning");
 						console.log("LOGIN FAILED");
 					} else {
 						// SUCCESS STATE
@@ -55,6 +58,7 @@ export default {
 						localStorage.setItem('participant_qrcode', resData.qrhash)
 						// GOTO ROUTE
       			router.push({name: "show_participant"})
+						this.$notify("Login erfolgreich.", "info");
 					}
 				})
 				.catch((err) => {
