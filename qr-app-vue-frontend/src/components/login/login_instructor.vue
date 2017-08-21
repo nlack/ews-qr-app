@@ -48,11 +48,10 @@ export default {
 					if (resStatus !== "success") {
 						// ERROR STATE
 						console.log("LOGIN FAILED");
-						alert("WRONG LOGIN");
 					} else {
-						localStorage.setItem("ins_api_key", resData.apikey);
+						localStorage.setItem("ins_api_key", resData.APIKey);
 						axios.post(process.env.API_URL + '/courses', {
-							"apikey": resData.apikey
+							"apikey": resData.APIKey
 						})
 						.then((response) => {
 							let resStatus = response.data.status;
@@ -62,7 +61,7 @@ export default {
 								consoe.log("GET COURSE LIST FAILED");
 								alert("API PERMISSION PROBLEM");
 							} else {
-								localStorage.setItem("courses", JSON.stringify(resData.courses));
+								localStorage.setItem("courses", JSON.stringify(resData));
       					router.push({name: "courses"})
 							}
 						})

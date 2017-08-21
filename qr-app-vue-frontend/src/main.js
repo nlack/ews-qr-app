@@ -4,7 +4,8 @@ import Vue from 'vue'
 import App from './App'
 import router from './router'
 import Notify from 'vue2-notify'
-import BootstrapVue from 'bootstrap-vue';
+import QrcodeVue from 'qrcode.vue';
+import BootstrapVue from 'bootstrap-vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 
@@ -23,7 +24,9 @@ new Vue({
   el: '#app',
   router,
   template: '<App/>',
-  components: { App },
+  components: {
+		App
+	},
 	data: {
 		sharedData: {}
 	}

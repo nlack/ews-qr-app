@@ -11,25 +11,10 @@
 		</b-navbar>
 
 <div>
-  <div class="row my-1">
-    <div class="col-sm-8">
-      <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" />
-    </div>
-  </div>
-  <div class="my-1 row">
-    <div class="col-md-6">
-      <b-form-fieldset horizontal label="Rows per page" :label-cols="6">
-        <b-form-select :options="pageOptions" v-model="perPage" />
-      </b-form-fieldset>
-    </div>
-  </div>
-
   <!-- Main table element -->
   <b-table striped hover show-empty
            :items="items"
            :fields="fields"
-           :current-page="currentPage"
-           :per-page="perPage"
            :filter="filter"
            :sort-by.sync="sortBy"
            :sort-desc.sync="sortDesc"
@@ -38,7 +23,7 @@
     <template slot="name" scope="row">{{row.value}}</template>
     <template slot="date" scope="row">{{row.value}}</template>
 		<template slot="action" scope="row">
-      <b-btn size="sm" @click.stop="showAddParticipants()">Hinzufügen</b-btn>
+      <b-btn size="sm" @click.stop="showAddParticipants(row)">Hinzufügen</b-btn>
     </template>
   </b-table>
 
@@ -53,8 +38,7 @@
   </b-modal>
 
 </div>
-
-
+<b-button size="lg" variant="success" v-on:click="addCourse()">Kurs hinzufügen</b-button>
   </div>
 </template>
 
@@ -66,10 +50,14 @@ import axios from 'axios';
 
 export default {
   name: 'courses',
-		data: () => {
+	data: () => {
 		let items = JSON.parse(localStorage.getItem('courses'));
 		for (let i = 0; i < items.length; i++) {
-			items[i]["par_length"] = items[i].participants.length;
+			if (items[i].participants === null) {
+				items[i]["par_length"] = 0;
+			} else {
+				items[i]["par_length"] = items[i].participants.length;
+			}
 		}
 
 		return {
@@ -94,19 +82,24 @@ export default {
 		logout: function () {
 			localStorage.removeItem('ins_api_key');
 			localStorage.removeItem('courses');
+			localStorage.removeItem('clicked_course');
 			router.push({name: "login_selection"});
 		},
-		resetModal() {
+		resetModal: function () {
 			this.modalDetails.data = '';
 			this.modalDetails.index = '';
 		},
-		onFiltered(filteredItems) {
+		onFiltered: function (filteredItems) {
 			// Trigger pagination to update the number of buttons/pages due to filtering
 			this.totalRows = filteredItems.length;
 			this.currentPage = 1;
 		},
-		showAddParticipants() {
+		showAddParticipants: function (row) {
+			localStorage.setItem('clicked_course', JSON.stringify(row.index));
 			router.push({ name: 'course_register' });
+		},
+		addCourse: function () {
+			router.push({ name: 'course_add'});
 		}
   }
 }
