@@ -22,7 +22,6 @@
 
 # Export von Tabelle course
 # ------------------------------------------------------------
-USE ews;
 
 USE ewsdb;
 DROP TABLE IF EXISTS `course`;
@@ -100,6 +99,7 @@ CREATE TABLE `participant` (
   `firstname` varchar(255) NOT NULL,
   `lastname` varchar(255) NOT NULL,
   `qrhash` varchar(255) NOT NULL,
+  `haspayed` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   UNIQUE KEY `qrhash` (`qrhash`)
@@ -108,27 +108,27 @@ CREATE TABLE `participant` (
 LOCK TABLES `participant` WRITE;
 /*!40000 ALTER TABLE `participant` DISABLE KEYS */;
 
-INSERT INTO `participant` (`id`, `name`, `password`, `firstname`, `lastname`, `qrhash`)
+INSERT INTO `participant` (`id`, `name`, `password`, `firstname`, `lastname`, `qrhash`,`haspayed`)
 VALUES
-(1,'Ulla','ulla123','Ulla','Urte','SskVvFqGlDYy2vBSxF8wgYyS0'),
-(2,'Ulrike','ulrike123','Ulrike','Grub','JNygMLPyAR9czjttaK9CVRIkT'),
-(3,'Undine','undine123','Undine','Grub','L35td3HR7JsJPNiOY73MAM45T'),
-(4,'Ursula','ursula123','Ursila','Grub','asENjnjr07c4TWItbnUlsgvSb'),
-(5,'Urte','urte123','Urte','Grub','61XbC6LQXRBHDuD2gNdrVm3je'),
-(6,'Uschi','uschi123','Uschi','Grub','vrcpZJTMb4Tc7d7thEpMEVVIg'),
-(7,'Uta','uta123','Uta','Grub','vY6Bxxbb2hUzuiTCRJZy9kRkH'),
-(8,'Ute','ute123','Ute','Grub','5o9Sype4b57aSlLmAFNuz5Y4K'),
-(9,'Ida','ida123','Ida','Grub','cCizrGhMLVrXqik4ZfqH9th9L'),
-(10,'Ina','ina123','Ina','Grub','p88minmGz7RJYlAgTvNw9qtNf'),
-(11,'Isa','isa123','Isa','Grub','I2KW6SVWEWVpMaTTTIhbKwccP'),
-(12,'Irene','irene123','Irene','Grub','0kDd2FF8XGqZFK0guWosIlVog'),
-(13,'Isis','isis123','Isis','Grub','SR4g0MkagU6L7HkYDL1kiQMmW'),
-(14,'Ivana','ibana123','Ivana','Grub','kL2n07EK0B6liVLwfxgDpRGNF'),
-(15,'Irem','irem123','Irem','Grub','VsMA37DQ1H3vtSXBUCmK2YRAr'),
-(16,'Inka','inka123','Inka','Grub','3Oziv0SaC0oNrQl3VSnTaZfFn'),
-(17,'Insa','insa123','Insa','Grub','pmg9ZIvKxo3res0XJQcqEY8lL'),
-(18,'Hanna','hanna123','Hanna','Grub','uHiUAwEnIgsq7Yw4u2XvPgSa2'),
-(19,'Hellen','hellen123','Hellen','Grub','TITzRMrGQC0BHtlwGbO6HsnOw');
+(1,'Ulla','ulla123','Ulla','Urte','SskVvFqGlDYy2vBSxF8wgYyS0','true'),
+(2,'Ulrike','ulrike123','Ulrike','Grub','JNygMLPyAR9czjttaK9CVRIkT','true'),
+(3,'Undine','undine123','Undine','Grub','L35td3HR7JsJPNiOY73MAM45T','true'),
+(4,'Ursula','ursula123','Ursila','Grub','asENjnjr07c4TWItbnUlsgvSb','true'),
+(5,'Urte','urte123','Urte','Grub','61XbC6LQXRBHDuD2gNdrVm3je','true'),
+(6,'Uschi','uschi123','Uschi','Grub','vrcpZJTMb4Tc7d7thEpMEVVIg','true'),
+(7,'Uta','uta123','Uta','Grub','vY6Bxxbb2hUzuiTCRJZy9kRkH','true'),
+(8,'Ute','ute123','Ute','Grub','5o9Sype4b57aSlLmAFNuz5Y4K','true'),
+(9,'Ida','ida123','Ida','Grub','cCizrGhMLVrXqik4ZfqH9th9L','true'),
+(10,'Ina','ina123','Ina','Grub','p88minmGz7RJYlAgTvNw9qtNf','true'),
+(11,'Isa','isa123','Isa','Grub','I2KW6SVWEWVpMaTTTIhbKwccP','true'),
+(12,'Irene','irene123','Irene','Grub','0kDd2FF8XGqZFK0guWosIlVog','false'),
+(13,'Isis','isis123','Isis','Grub','SR4g0MkagU6L7HkYDL1kiQMmW','false'),
+(14,'Ivana','ibana123','Ivana','Grub','kL2n07EK0B6liVLwfxgDpRGNF','false'),
+(15,'Irem','irem123','Irem','Grub','VsMA37DQ1H3vtSXBUCmK2YRAr','false'),
+(16,'Inka','inka123','Inka','Grub','3Oziv0SaC0oNrQl3VSnTaZfFn','false'),
+(17,'Insa','insa123','Insa','Grub','pmg9ZIvKxo3res0XJQcqEY8lL','false'),
+(18,'Hanna','hanna123','Hanna','Grub','uHiUAwEnIgsq7Yw4u2XvPgSa2','false'),
+(19,'Hellen','hellen123','Hellen','Grub','TITzRMrGQC0BHtlwGbO6HsnOw','false');
 
 /*!40000 ALTER TABLE `participant` ENABLE KEYS */;
 UNLOCK TABLES;

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/emicklei/go-restful"
@@ -198,7 +199,17 @@ func (u *ParticipantResource) addParticipant(request *restful.Request, response 
 
 	part, err := models.ParticipantByQrhash(db, a.Qrhash)
 	if err != nil {
+		if strings.Contains(err.Error(), "1062") {
+			jsend.Wrap(response.ResponseWriter).Status(http.StatusBadRequest).Message("Participant already added").Send()
+			fmt.Println(errors.Wrap(err, 0).ErrorStack())
+			return
+		}
 		badRequest(response, err)
+		return
+	}
+	if !part.Haspayed {
+		jsend.Wrap(response.ResponseWriter).Status(http.StatusBadRequest).Message("Participant has not payed").Send()
+		fmt.Println(errors.Wrap(err, 0).ErrorStack())
 		return
 	}
 	coursePart.Courseid, err = strconv.Atoi(request.PathParameter("course-id"))
@@ -209,6 +220,11 @@ func (u *ParticipantResource) addParticipant(request *restful.Request, response 
 	coursePart.Participantid = part.ID
 	err = coursePart.Save(db)
 	if err != nil {
+		if strings.Contains(err.Error(), "1062") {
+			jsend.Wrap(response.ResponseWriter).Status(http.StatusBadRequest).Message("Participant already added").Send()
+			fmt.Println(errors.Wrap(err, 0).ErrorStack())
+			return
+		}
 		badRequest(response, err)
 		return
 	}
@@ -302,10 +318,12 @@ func (u *ParticipantResource) listCourses(request *restful.Request, response *re
 				Name      string
 				Firstname string
 				Lastname  string
+				Haspayed  bool
 			})
 			a.Name = part.Name
 			a.Firstname = part.Firstname
 			a.Lastname = part.Lastname
+			a.Haspayed = part.Haspayed
 			if err != nil {
 				serverError(response, err)
 				return
@@ -463,6 +481,7 @@ func (u *ParticipantResource) createParticipant(request *restful.Request, respon
 		fmt.Println(errors.Wrap(err, 1))
 		return
 	}
+	usr.Haspayed = true
 	usr.Qrhash = randomString(25)
 	err = validate.Struct(*usr)
 	if err != nil {

@@ -16,6 +16,7 @@ type Participant struct {
 	Firstname string `json:"firstname"`                // firstname
 	Lastname  string `json:"lastname"`                 // lastname
 	Qrhash    string `json:"qrhash" validate:"len=25"` // qrhash
+	Haspayed  bool   `json:"haspayed"`
 
 	// xo fields
 	_exists, _deleted bool
@@ -42,14 +43,14 @@ func (p *Participant) Insert(db XODB) error {
 
 	// sql insert query, primary key provided by autoincrement
 	var sqlstr = `INSERT INTO ` + os.Getenv("DBName") + `.participant (` +
-		`name, password, firstname, lastname, qrhash` +
+		`name, password, firstname, lastname, qrhash,haspayed` +
 		`) VALUES (` +
-		`?, ?, ?, ?, ?` +
+		`?, ?, ?, ?, ?,?` +
 		`)`
 
 	// run query
-	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash)
-	res, err := db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash)
+	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.Haspayed)
+	res, err := db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.Haspayed)
 	if err != nil {
 		return err
 	}
@@ -83,12 +84,12 @@ func (p *Participant) Update(db XODB) error {
 
 	// sql query
 	var sqlstr = `UPDATE ` + os.Getenv("DBName") + `.participant SET ` +
-		`name = ?, password = ?, firstname = ?, lastname = ?, qrhash = ?` +
+		`name = ?, password = ?, firstname = ?, lastname = ?, qrhash = ?,haspayed=?` +
 		` WHERE id = ?`
 
 	// run query
-	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.ID)
-	_, err = db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.ID)
+	XOLog(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.Haspayed, p.ID)
+	_, err = db.Exec(sqlstr, p.Name, p.Password, p.Firstname, p.Lastname, p.Qrhash, p.Haspayed, p.ID)
 	return err
 }
 
@@ -139,7 +140,7 @@ func ParticipantByName(db XODB, name string) (*Participant, error) {
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash, haspayed ` +
 		`FROM ` + os.Getenv("DBName") + `.participant ` +
 		`WHERE name = ?`
 
@@ -149,7 +150,7 @@ func ParticipantByName(db XODB, name string) (*Participant, error) {
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, name).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
+	err = db.QueryRow(sqlstr, name).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash, &p.Haspayed)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +163,7 @@ func ParticipantByNameAndPW(db XODB, name string, password string) (*Participant
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash,haspayed ` +
 		`FROM ` + os.Getenv("DBName") + `.participant ` +
 		`WHERE name = ? AND password = ?`
 
@@ -172,7 +173,7 @@ func ParticipantByNameAndPW(db XODB, name string, password string) (*Participant
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, name, password).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
+	err = db.QueryRow(sqlstr, name, password).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash, &p.Haspayed)
 	if err != nil {
 		return nil, err
 	}
@@ -188,7 +189,7 @@ func ParticipantByID(db XODB, id int) (*Participant, error) {
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash,haspayed ` +
 		`FROM ` + os.Getenv("DBName") + `.participant ` +
 		`WHERE id = ?`
 
@@ -198,7 +199,7 @@ func ParticipantByID(db XODB, id int) (*Participant, error) {
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, id).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
+	err = db.QueryRow(sqlstr, id).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash, &p.Haspayed)
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +215,7 @@ func ParticipantByQrhash(db XODB, qrhash string) (*Participant, error) {
 
 	// sql query
 	var sqlstr = `SELECT ` +
-		`id, name, password, firstname, lastname, qrhash ` +
+		`id, name, password, firstname, lastname, qrhash,haspayed ` +
 		`FROM ` + os.Getenv("DBName") + `.participant ` +
 		`WHERE qrhash = ?`
 
@@ -224,7 +225,7 @@ func ParticipantByQrhash(db XODB, qrhash string) (*Participant, error) {
 		_exists: true,
 	}
 
-	err = db.QueryRow(sqlstr, qrhash).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash)
+	err = db.QueryRow(sqlstr, qrhash).Scan(&p.ID, &p.Name, &p.Password, &p.Firstname, &p.Lastname, &p.Qrhash, &p.Haspayed)
 	if err != nil {
 		return nil, err
 	}
