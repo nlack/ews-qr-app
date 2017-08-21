@@ -76,7 +76,7 @@ func (u ParticipantResource) Register(container *restful.Container) {
 	cors := restful.CrossOriginResourceSharing{
 		ExposeHeaders:  []string{"X-My-Header"},
 		AllowedHeaders: []string{"Content-Type", "Accept"},
-		AllowedMethods: []string{"GET", "POST"},
+		AllowedMethods: []string{"GET", "POST", "PUT"},
 		CookiesAllowed: false,
 		Container:      container}
 
