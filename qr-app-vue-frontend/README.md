@@ -11,11 +11,10 @@ Front End to use the qr-backend
 - [x] Logout as instructor
 - [x] Show participant qr-code
 - [x] Show instructor course list
+- [x] Show instructor register participant to course window
+- [x] Check permission in routing
+- [x] Add new Course
 
-
-- [ ] Show instructor register participant to course window
-- [ ] Validate all routes
-- [ ] Validate login forms
 
 ## Requirements
 
@@ -24,9 +23,9 @@ Front End to use the qr-backend
 
 ## Configuration
 
-Need to change URL to backend server!
+Need to change URL to backend server adress!
 
-Edit file `qr-app-vue-frontend/config/prod.env.js`
+Edit file `config/prod.env.js`
 
 Replace `URL` in `API_URL: '"URL"'` with you own configuration.
 
@@ -73,11 +72,9 @@ npm install
 # serve with hot reload at localhost:1337
 npm run dev
 
-# build for production with minification
+# build for production with minification, need webserver to! file:// doesn't work!
 npm run build
 
 # build for production and view the bundle analyzer report
 npm run build --report
 ```
-
-For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
