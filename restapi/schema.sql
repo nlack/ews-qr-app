@@ -110,7 +110,7 @@ LOCK TABLES `participant` WRITE;
 
 INSERT INTO `participant` (`id`, `name`, `password`, `firstname`, `lastname`, `qrhash`,`haspayed`)
 VALUES
-(1,'Ulla','ulla123','Ulla','Urte','SskVvFqGlDYy2vBSxF8wgYyS0','true'),
+(1,'Ulla','ulla123','Ulla','Urte','SskVvFqGlDYy2vBSxF8wgYyS0','false'),
 (2,'Ulrike','ulrike123','Ulrike','Grub','JNygMLPyAR9czjttaK9CVRIkT','true'),
 (3,'Undine','undine123','Undine','Grub','L35td3HR7JsJPNiOY73MAM45T','true'),
 (4,'Ursula','ursula123','Ursila','Grub','asENjnjr07c4TWItbnUlsgvSb','true'),
