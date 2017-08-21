@@ -41,18 +41,21 @@ export default {
 				axios.post(process.env.API_URL + '/instructor', {
 						"name": user,
 						"password": password
-				})
+				}, {validateStatus: function (status) {
+					return true;
+				}})
 				.then((response) => {
 					let resStatus = response.data.status;
 					let resData = response.data.data;
 					if (resStatus !== "success") {
-						// ERROR STATE
-						console.log("LOGIN FAILED");
+						this.$notify("Login fehlgeschlagen.", "warning");
 					} else {
 						localStorage.setItem("ins_api_key", resData.APIKey);
 						axios.post(process.env.API_URL + '/courses', {
 							"apikey": resData.APIKey
-						})
+						}, {validateStatus: function (status) {
+							return true;
+						}})
 						.then((response) => {
 							let resStatus = response.data.status;
 							let resData = response.data.data;
@@ -63,6 +66,7 @@ export default {
 							} else {
 								localStorage.setItem("courses", JSON.stringify(resData));
       					router.push({name: "courses"})
+								this.$notify("Login erfolgreich.", "info");
 							}
 						})
 						.catch((err) => {
