@@ -198,7 +198,7 @@ func (u *ParticipantResource) addParticipant(request *restful.Request, response 
 
 	part, err := models.ParticipantByQrhash(db, a.Qrhash)
 	if err != nil {
-		serverError(response, err)
+		badRequest(response, err)
 		return
 	}
 	coursePart.Courseid, err = strconv.Atoi(request.PathParameter("course-id"))
@@ -209,7 +209,7 @@ func (u *ParticipantResource) addParticipant(request *restful.Request, response 
 	coursePart.Participantid = part.ID
 	err = coursePart.Save(db)
 	if err != nil {
-		serverError(response, err)
+		badRequest(response, err)
 		return
 	}
 	jsend.Wrap(response.ResponseWriter).Status(http.StatusOK).Send()
