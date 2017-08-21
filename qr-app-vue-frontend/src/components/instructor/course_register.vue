@@ -10,9 +10,27 @@
 		  </b-collapse>
 		</b-navbar>
 		<div>
-			<video width="640" height="480" id="scanner"></video></br>
+			<video width="85%" height="50%" id="scanner"></video></br>
+			<b-button variant="warning" v-on:click="goBack()">Zurück</b-button>
 			<b-button v-bind:disabled="scanActive" variant="primary" v-on:click="runScanner(); scanActive=true">Starte Scanner</b-button>
 		</div>
+
+  <!-- Main table element -->
+  <b-table striped hover show-empty
+           :items="participants"
+           :fields="fields"
+           :current-page="currentPage"
+           :per-page="perPage"
+  >
+    <template slot="firstname" scope="row">{{row.value}}</template>
+    <template slot="lastname" scope="row">{{row.value}}</template>
+  </b-table>
+
+  <!-- Details modal -->
+  <b-modal id="modal1" @hide="resetModal" ok-only>
+    <h4 class="my-1 py-1" slot="modal-header">Index: {{ modalDetails.index }}</h4>
+    <pre>{{ modalDetails.data }}</pre>
+  </b-modal>
 
 	</div>
 </template>
@@ -22,18 +40,31 @@ import router from '@/router/index'
 import axios from 'axios'
 const Instascan = require('instascan-ngfar')
 
-//TODO: speichere geklickten kurs als localStorage
-//TODO: prüfe beim betreten der route, ob dieser storage gesetzt ist reouting zu /courses
-//TODO: falls nicht
-
 //TODO: add register ajax call on successfully scanned qr-code
 //TODO: list allready registered users, update on every register?
 
 export default {
-  name: 'courses',
+  name: 'course_register',
 	data: () => {
+
+		let index = localStorage.getItem('clicked_course');
+		let courses =  JSON.parse(
+			localStorage.getItem('courses')
+		);
+
+		let participants = courses[index].participants;
+
 		return {
-			scanActive: false
+			scanActive: false,
+	    participants: participants,
+	    fields: {
+	      "firstname":     { label: 'Vorname', sortable: true },
+	      "lastname":      { label: 'Nachname', sortable: true}
+	    },
+	    currentPage: 1,
+	    perPage: 5,
+	    pageOptions: [{text:5,value:5},{text:10,value:10},{text:15,value:15}],
+	    modalDetails: { index:'', data:'' }
 		}
 	},
   methods: {
@@ -42,12 +73,40 @@ export default {
 			localStorage.removeItem('courses');
 			router.push({name: "login_selection"});
 		},
+		goBack: function () {
+			router.push({name: "courses"});
+		},
+		resetModal() {
+			this.modalDetails.data = '';
+			this.modalDetails.index = '';
+		},
 		runScanner: function () {
 			let scanner = new Instascan.Scanner({
 				video: document.getElementById('scanner'),
 				backgroundScan: false
 			});
 			scanner.addListener('scan', (content) => {
+				let key = localStorage.getItem('ins_api_key');
+				let cId = localStorage.getItem('clicked_course');
+				axios.put( process.env.API_URL + "/course/" + cId, {
+					"apikey": key,
+					"qrhash": content
+				}, {validateStatus: function (status) {
+					return status < 500;
+				}})
+				.then( (response) => {
+					let resStatus = response.data.status;
+					let resMsg = response.data.message;
+
+					if (resStatus !== "success") {
+						this.$notify(resMsg, "error");
+					} else {
+						this.$notify("Teilnehmer erfolgreich hinzugefügt.", "info");
+					}
+				})
+				.catch( (err) => {
+					console.error(err);
+				});
 				this.$notify(content, 'success');
 				console.log("Found QR-Code Content: " + content);
 			});

@@ -9,19 +9,26 @@
 		    </b-nav>
 		  </b-collapse>
 		</b-navbar>
-
-		<img class="img-fluid" alt="Responsive image" v-bind:src="qrcode" />
+		<div style="height:80%;">
+		<qrcode-vue id="qrcode" :value="qrcode" :size="windowSize" level="H" ></qrcode-vue>
+	</div>
   </div>
 
 </template>
 
 <script>
 import router from '@/router/index'
+import QrcodeVue from 'qrcode.vue';
 
-//TODO: hinzufügen von QR-CODE aus String lib
+
+
 
 export default {
   name: 'show_participant',
+	mounted: function() {
+		console.log("DOM READY");
+		document.querySelector('#qrcode').style = "border:50px solid #FFFFFF;";
+	},
   methods: {
 		logout: function () {
 			localStorage.removeItem('participant_lastname');
@@ -31,11 +38,24 @@ export default {
 		}
   },
 	data: () => {
+		let winH = window.innerHeight;
+		let winW = window.innerWidth;
+		let winSize = 0;
+		if (winH < winW) {
+			 winSize = (winH - 50 / 100 * 85) - 150;
+		} else {
+			winSize = (winW - 50 / 100 * 85) - 150;
+		}
+
 		return {
 			qrcode: localStorage.getItem('participant_qrcode'),
 			lastname: localStorage.getItem('participant_lastname'),
-			firstname: localStorage.getItem('participant_firstname')
-		}
+			firstname: localStorage.getItem('participant_firstname'),
+			windowSize: winSize
+		};
+	},
+	components: {
+		QrcodeVue
 	}
 }
 </script>
